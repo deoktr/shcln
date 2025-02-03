@@ -1,3 +1,17 @@
+// Copyright 2025 Deoktr
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use std::env;
 use std::fs::{copy, remove_file, File};
 use std::io::{prelude::*, BufReader, BufWriter};
@@ -8,26 +22,29 @@ use regex::Regex;
 
 const BASH_HISTORY_FILE_PATH: &str = ".bash_history";
 
-static MATCH_LIST: LazyLock<[Regex; 52]> = LazyLock::new(|| {
+static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
     [
-        // low quality matches
+        // non-targeted matches
         Regex::new(r" --?[0-9a-zA-Z_-]*pass(?:word)? *=?([^ ]+)").unwrap(),
         Regex::new(r" --?[0-9a-zA-Z_-]*token[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
         Regex::new(r" --?[0-9a-zA-Z_-]*auth[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
         Regex::new(r" --?[0-9a-zA-Z_-]*key(?: +|=)([^ ]+)").unwrap(),
         Regex::new(r" --?[0-9a-zA-Z_-]*jwt[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
         Regex::new(r" --?[0-9a-zA-Z_-]*secret[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
-        Regex::new(r">.*(?:secret|pass|token|jwt)").unwrap(),
-        // medium quality matches
-        Regex::new(r#"KEY[0-9a-zA-Z_-]*=["']?([^ ]+)["']?"#).unwrap(),
-        Regex::new(r#"SECRET[0-9a-zA-Z_-]*=["']?([^ ]+)["']?"#).unwrap(),
-        Regex::new(r#"JWT[0-9a-zA-Z_-]*=["']?([^ ]+)["']?"#).unwrap(),
-        Regex::new(r#"TOKEN[0-9a-zA-Z_-]*=["']?([^ ]+)["']?"#).unwrap(),
-        // high quality matches
+        Regex::new(r"echo +(.*) *>.*(?:secret|pass|token|jwt)").unwrap(), // secret file creation
+        // TODO: remove quotes from match group, note that rust regex doesn't
+        // support look-around, and we need a single group, also cannot name
+        // caputre group
+        Regex::new(r#"KEY[0-9a-zA-Z_-]*=('[^']*'|"[^"]*"|[^ ]+)"#).unwrap(),
+        Regex::new(r#"SECRET[0-9a-zA-Z_-]*=('[^']*'|"[^"]*"|[^ ]+)"#).unwrap(),
+        Regex::new(r#"TOKEN[0-9a-zA-Z_-]*=('[^']*'|"[^"]*"|[^ ]+)"#).unwrap(),
+        Regex::new(r#"JWT[0-9a-zA-Z_-]*=('[^']*'|"[^"]*"|[^ ]+)"#).unwrap(),
+        // targeted matches
         Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.*-S"#).unwrap(),
+        Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.* passwd .*"#).unwrap(),
         Regex::new(r#"sudo.*-S.*<<< *(.*)"#).unwrap(),
         Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
-        Regex::new(r"AWS_SECRET_ACCESS_KEY=([0-9a-zA-Z*/+]{0,100})").unwrap(),
+        Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
         Regex::new(r"(?i)(aws_access_key_id|aws_secret_access_key)=([0-9a-zA-Z/+]{20,40})").unwrap(),
         Regex::new(r#"(?i:authorization):(?:.*)(?i:Basic).(.*)("|'|\x60|\$\()"#).unwrap(),
         Regex::new(r"curl.*(?:-u|--user)(?:[ =])([^ ]*)").unwrap(),
@@ -36,15 +53,15 @@ static MATCH_LIST: LazyLock<[Regex; 52]> = LazyLock::new(|| {
         Regex::new(r"gho_[0-9a-zA-Z]{36}").unwrap(),
         Regex::new(r"(ghu|ghs)_[0-9a-zA-Z]{36}").unwrap(),
         Regex::new(r"ghr_[0-9a-zA-Z]{36}").unwrap(),
-        Regex::new(r"GITLAB_TOKEN=([0-9a-zA-Z*/+]{0,100})").unwrap(),
+        Regex::new(r#"GITLAB_TOKEN=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
         Regex::new(r"glpat-[0-9a-zA-Z-_]{20}").unwrap(),
         Regex::new(r#"(?i)(?:heroku)(?:[0-9a-z\-_\t .]{0,20})(?:[\s|']|[\s|"]){0,3}(?:=|>|:=|\|\|:|<=|=>|:)(?:'|"|\s|=|\x60){0,5}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
-        Regex::new(r"HEROKU_API_KEY=([0-9a-zA-Z*/+]{0,100})").unwrap(),
-        Regex::new(r"VAULT_TOKEN=([0-9a-zA-Z*/+]{0,100})").unwrap(),
-        Regex::new(r"CONSUL_HTTP_TOKEN=([0-9a-zA-Z*/+]{0,100})").unwrap(),
-        Regex::new(r"VERCEL_TOKEN=([0-9a-zA-Z*/+]{0,100})").unwrap(),
-        Regex::new(r"CLOUDFLARE_API_KEY=([0-9a-zA-Z*/+]{0,100})").unwrap(),
-        Regex::new(r"NEWRELIC_API_KEY=([0-9a-zA-Z*/+]{0,100})").unwrap(),
+        Regex::new(r#"HEROKU_API_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
+        Regex::new(r#"VAULT_TOKEN=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
+        Regex::new(r#"CONSUL_HTTP_TOKEN=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
+        Regex::new(r#"VERCEL_TOKEN=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
+        Regex::new(r#"CLOUDFLARE_API_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
+        Regex::new(r#"NEWRELIC_API_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
         Regex::new(r#""key-[0-9a-zA-Z]{32}""#).unwrap(), // MailGun API Key
         Regex::new(r"(?i)[0-9a-f]{32}-us[0-9]{1,2}").unwrap(),
         Regex::new(r"SG.[0-9A-Za-z\-_]{15,30}\.[0-9A-Za-z\-_]{15,30}").unwrap(),
@@ -62,8 +79,8 @@ static MATCH_LIST: LazyLock<[Regex; 52]> = LazyLock::new(|| {
         Regex::new(r#"(?i)linkedin(.{0,20})?(?-i)[''"]([0-9a-zA-Z]{12,16})[''"]"#).unwrap(),
         Regex::new(r"EAACEdEose0cBA[0-9A-Za-z]+").unwrap(),
         Regex::new(r#"(?i)(?:datadog)(?:[0-9a-z\-_\t .]{0,20})(?:\[s|']|[\s|"]){0,3}(?:=|>|:=|\|\|:|<=|=>|:)(?:'|"|\s|=|\x60){0,5}([a-z0-9]{40})(?:['|"|\n|\r|\s|\x60|;]|$)"#).unwrap(),
-        Regex::new(r"README_API_KEY=([0-9a-zA-Z*/+]{0,100})").unwrap(),
-        Regex::new(r"CARGO_REGISTRY_TOKEN=([0-9a-zA-Z*/+]{0,100})").unwrap(),
+        Regex::new(r#"README_API_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
+        Regex::new(r#"CARGO_REGISTRY_TOKEN=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
         Regex::new(r"diskutil.*passphrase ([[:alpha:][:punct:]]{0,200}).*").unwrap(),
     ]
 });
@@ -124,6 +141,12 @@ fn rm_line(line: &str) -> bool {
             // debug logs
             // println!("matched: {}\nwith: {}", line, re);
 
+            // TODO: hash the secret before logging
+            // get the secret value
+            // let caps = re.captures(line).unwrap();
+            // let secret = caps.get(1).unwrap();
+            // println!("secret: {}", secret.as_str());
+
             return true;
         }
     }
@@ -178,6 +201,12 @@ mod tests {
 
     #[test]
     fn test_rm_line_sudo() {
+        // no match
+        assert!(!rm_line("echo 'foo' | sudo xargs echo"));
+        assert!(!rm_line("sudo passwd root"));
+        assert!(!rm_line("sudo passwd john"));
+
+        // match
         assert!(rm_line("echo abcdefg123! | sudo -S foo"));
         assert!(rm_line("echo   abcdefg123!   |   sudo  -S   foo  --help"));
         assert!(rm_line("echo 'abcdefg123!' | sudo -S foo"));
@@ -188,7 +217,7 @@ mod tests {
         assert!(rm_line("sudo -S <<< 'password' foo"));
         assert!(rm_line("sudo -S <<< 'password bar' foo"));
         assert!(rm_line("sudo -S <<< \"password\" foo"));
-        // assert!(rm_line("echo -e 'foo\\nfoo\\n' | sudo passwd root"));
+        assert!(rm_line("echo -e 'foo\\nfoo\\n' | sudo passwd root"));
     }
 
     #[test]
@@ -211,6 +240,7 @@ mod tests {
         assert!(!rm_line("echo $SECRET_TOKEN_KEY"));
         assert!(!rm_line("aws sso login --profile my-profile"));
         assert!(!rm_line("grep password foo.txt"));
+        assert!(!rm_line("mkpasswd"));
 
         // match
         assert!(rm_line("export SECRET=abc"));

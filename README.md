@@ -1,10 +1,8 @@
 # shcln
 
-Shell history cleaner, remove password and other sensible command arguments from shell history.
+Shell history cleaner, remove password and other sensitive entries from shell history.
 
-Features:
-
-- Low memory usage with buffered I/O streams.
+This project aims to work on both workstations and servers.
 
 ## Usage
 
@@ -26,7 +24,6 @@ Run:
 
 ## TODO
 
-- Keep same owner and permissions on history file
 - Create a CLI
 - Configure file locations
 - Configure matches, add match list (to remove) and exclude list (to keep)
