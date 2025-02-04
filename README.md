@@ -24,7 +24,6 @@ Run:
 
 ## TODO
 
-- Create a CLI
 - Configure file locations
 - Configure matches, add match list (to remove) and exclude list (to keep)
 - Add a dry run mode

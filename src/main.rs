@@ -1,23 +1,28 @@
-// Copyright 2025 Deoktr
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Copyright 2025 Deoktr
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 use std::env;
+use std::error::Error;
+use std::fmt;
 use std::fs::{copy, remove_file, File};
 use std::io::{prelude::*, BufReader, BufWriter};
-use std::path::Path;
-use std::sync::LazyLock;
+use std::path::PathBuf;
+use std::sync::{LazyLock, OnceLock};
 
+use clap::Parser;
 use regex::Regex;
 
 const BASH_HISTORY_FILE_PATH: &str = ".bash_history";
@@ -43,6 +48,7 @@ static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
         Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.*-S"#).unwrap(),
         Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.* passwd .*"#).unwrap(),
         Regex::new(r#"sudo.*-S.*<<< *(.*)"#).unwrap(),
+        Regex::new(r#"docker.*--password-stdin"#).unwrap(),
         Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r"(?i)(?:aws_access_key_id|aws_secret_access_key)=([0-9a-zA-Z/+]{20,40})").unwrap(),
@@ -69,7 +75,8 @@ static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
         Regex::new(r"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-zA-Z0-9]{30,32})").unwrap(),
         Regex::new(r"https://hooks.slack.com/services/([A-Za-z0-9+/]{44,46})").unwrap(),
         Regex::new(r"(SK[0-9a-fA-F]{32})").unwrap(),
-        Regex::new(r"(([A-Za-z]*:(?://)?)([-;:&=\+\$,\w]+)@[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:/[\+~%/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?").unwrap(),
+        // FIXME: wrongly match `ssh user@localhost`
+        // Regex::new(r"(([A-Za-z]*:(?://)?)([-;:&=\+\$,\w]+)@[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:/[\+~%/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?").unwrap(),
         Regex::new(r#"(?i)\b(AIza[0-9A-Za-z\\-_]{35})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
         Regex::new(r"https://outlook.office.com/webhook/([0-9a-f-]{36})/@").unwrap(),
         Regex::new(r"oy2[a-z0-9]{43}").unwrap(),
@@ -85,19 +92,69 @@ static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
     ]
 });
 
-static KEEP_TMP: bool = true;
+static KEEP_TMP: OnceLock<bool> = OnceLock::new();
+
+#[derive(Debug)]
+struct ShclnError {
+    message: String,
+}
+
+impl Error for ShclnError {}
+
+impl fmt::Display for ShclnError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+// return Err(ShclnError {shcln_err!("Failed to remove temp file '{tmp_path}': {error}")})
+macro_rules! shcln_err {
+    ($message:tt) => {
+        return Err(ShclnError {
+            message: format!($message),
+        })
+    };
+}
+
+/// Remove sensitive entries from shell histories.
+#[derive(Parser)]
+#[command(version)]
+struct Cli {
+    /// User home directory (default: read HOME env)
+    #[arg(long)]
+    home: Option<PathBuf>,
+
+    /// Keep temp backup file
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    keep_tmp: bool,
+}
 
 fn main() {
-    let home_path = env::var("HOME").unwrap();
+    let args = Cli::parse();
+
+    KEEP_TMP.get_or_init(|| args.keep_tmp);
+
+    let home_path = args.home.unwrap_or_else(|| {
+        PathBuf::from(
+            env::var("HOME").expect("home flag not specified and HOME env var not defined"),
+        )
+    });
+
+    println!("cleaning home: {}", home_path.display());
+
     clean_home(&home_path);
 }
 
-fn clean_home(home_path: &str) {
-    let base_path = Path::new(home_path).join(BASH_HISTORY_FILE_PATH);
+fn clean_home(home_path: &PathBuf) {
+    let base_path = home_path.join(BASH_HISTORY_FILE_PATH);
     let history_path = base_path.display().to_string();
     let tmp_path = base_path.with_extension("bak").display().to_string();
 
-    let removed = clean_history(&history_path, &tmp_path).unwrap();
+    let removed = match clean_history(&history_path, &tmp_path) {
+        Ok(removed) => removed,
+        // print the error in red
+        Err(err) => return println!("\x1b[0;31m{}\x1b[0m", err),
+    };
 
     println!(
         "removed {} {} from bash history ({})",
@@ -108,30 +165,51 @@ fn clean_home(home_path: &str) {
 }
 
 /// Clean a shell history file.
-fn clean_history(history_path: &str, tmp_path: &str) -> Result<u32, std::io::Error> {
-    copy(history_path, tmp_path)?;
+fn clean_history(history_path: &str, tmp_path: &str) -> Result<u32, ShclnError> {
+    match copy(history_path, tmp_path) {
+        Ok(_) => (),
+        Err(error) => shcln_err!("Failed to copy '{history_path}' to '{tmp_path}': {error}"),
+    };
 
-    let history_file = File::create(history_path)?;
-    let tmp_file = File::open(tmp_path)?;
+    let history_file = match File::create(history_path) {
+        Ok(file) => file,
+        Err(error) => shcln_err!("Failed to open '{history_path}': {error}"),
+    };
+    let tmp_file = match File::open(tmp_path) {
+        Ok(file) => file,
+        Err(error) => shcln_err!("Failed to create '{tmp_path}': {error}"),
+    };
 
     let mut writer = BufWriter::new(history_file);
     let mut reader = BufReader::new(tmp_file);
 
     let mut removed: u32 = 0;
     let mut line = String::new();
-    while reader.read_line(&mut line)? > 0 {
-        if !rm_line(&line) {
-            writer.write(line.as_bytes())?;
+    while match reader.read_line(&mut line) {
+        Ok(b) => b,
+        Err(error) => shcln_err!("Failed to read lines from '{tmp_path}': {error}"),
+    } > 0
+    {
+        if !rm_line(&line.trim_end()) {
+            match writer.write(line.as_bytes()) {
+                Ok(_) => (),
+                Err(error) => shcln_err!("Failed to write line to '{history_path}': {error}"),
+            };
         } else {
-            println!("removed: {}", line.trim_end());
             removed += 1;
         }
         line.clear();
     }
-    writer.flush()?;
+    match writer.flush() {
+        Ok(_) => (),
+        Err(error) => shcln_err!("Failed to flush '{history_path}': {error}"),
+    };
 
-    if !KEEP_TMP {
-        remove_file(tmp_path)?;
+    if !KEEP_TMP.get().unwrap() {
+        match remove_file(tmp_path) {
+            Ok(_) => (),
+            Err(error) => shcln_err!("Failed to remove temp file '{tmp_path}': {error}"),
+        };
     }
 
     Ok(removed)
@@ -149,6 +227,8 @@ fn rm_line(line: &str) -> bool {
             // let caps = re.captures(line).unwrap();
             // let secret = caps.get(1).unwrap();
             // println!("secret: {}", secret.as_str());
+
+            println!("removed: {}", line.trim_end());
 
             return true;
         }
@@ -244,6 +324,7 @@ mod tests {
         assert!(!rm_line("aws sso login --profile my-profile"));
         assert!(!rm_line("grep password foo.txt"));
         assert!(!rm_line("mkpasswd"));
+        assert!(!rm_line("ssh user@localhost"));
 
         // match
         assert!(rm_line("export SECRET=abc"));
@@ -254,5 +335,8 @@ mod tests {
         assert!(rm_line("echo 'abcdefg123!' > pass"));
         assert!(rm_line("prog --password 'foo' && ssh-keyscan"));
         assert!(rm_line("ykman --scp-password abc"));
+        assert!(rm_line(
+            "echo \"foobar\" | docker login example.com -u user --password-stdin"
+        ))
     }
 }
