@@ -52,7 +52,7 @@ static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
         Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r"(?i)(?:aws_access_key_id|aws_secret_access_key)=([0-9a-zA-Z/+]{20,40})").unwrap(),
-        Regex::new(r#"(?i:authorization):(?:.*)(?i:Basic).(.*)("|'|\x60|\$\()"#).unwrap(),
+        Regex::new(r#"(?i:authorization):(?:.*)(?i:basic).(.*)("|'|\x60|\$\()"#).unwrap(),
         Regex::new(r"curl.*(?:-u|--user)(?:[ =])([^ ]*)").unwrap(),
         Regex::new(r#"GITHUB_TOKEN=["']?([0-9a-zA-Z*_/+]{1,100})["']?"#).unwrap(),
         Regex::new(r"ghp_[0-9a-zA-Z]{36}").unwrap(),
@@ -103,7 +103,9 @@ impl Error for ShclnError {}
 
 impl fmt::Display for ShclnError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.message)
+        // write!(f, "{}", self.message)
+        // red colored log
+        write!(f, "\x1b[0;31m{}\x1b[0m", self.message)
     }
 }
 
@@ -152,8 +154,7 @@ fn clean_home(home_path: &PathBuf) {
 
     let removed = match clean_history(&history_path, &tmp_path) {
         Ok(removed) => removed,
-        // print the error in red
-        Err(err) => return println!("\x1b[0;31m{}\x1b[0m", err),
+        Err(err) => return println!("{}", err),
     };
 
     println!(
@@ -185,11 +186,31 @@ fn clean_history(history_path: &str, tmp_path: &str) -> Result<u32, ShclnError> 
 
     let mut removed: u32 = 0;
     let mut line = String::new();
-    while match reader.read_line(&mut line) {
-        Ok(b) => b,
-        Err(error) => shcln_err!("Failed to read lines from '{tmp_path}': {error}"),
-    } > 0
-    {
+
+    loop {
+        match reader.read_line(&mut line) {
+            Ok(b) => {
+                if b == 0 {
+                    break;
+                }
+            }
+            Err(ref error) if error.kind() == std::io::ErrorKind::InvalidData => {
+                // ignore invalid UTF-8 errors
+                println!(
+                    "{}",
+                    ShclnError {
+                        message: format!("Failed to read line from '{tmp_path}': {error}")
+                    }
+                );
+                continue;
+            }
+            Err(error) => shcln_err!("Failed to read line from '{tmp_path}': {error}"),
+        }
+
+        if line.trim_end().len() == 0 {
+            continue;
+        }
+
         if !rm_line(&line.trim_end()) {
             match writer.write(line.as_bytes()) {
                 Ok(_) => (),
@@ -200,6 +221,7 @@ fn clean_history(history_path: &str, tmp_path: &str) -> Result<u32, ShclnError> 
         }
         line.clear();
     }
+
     match writer.flush() {
         Ok(_) => (),
         Err(error) => shcln_err!("Failed to flush '{history_path}': {error}"),
@@ -337,6 +359,10 @@ mod tests {
         assert!(rm_line("ykman --scp-password abc"));
         assert!(rm_line(
             "echo \"foobar\" | docker login example.com -u user --password-stdin"
-        ))
+        ));
+        assert!(rm_line("curl -u 'admin:foobar123!' http://example.com/"));
+        assert!(rm_line(
+            "curl -H \"Authorization: Basic foobar123\" http://example.com/"
+        ));
     }
 }

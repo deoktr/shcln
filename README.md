@@ -28,7 +28,7 @@ Run:
 - Configure matches, add match list (to remove) and exclude list (to keep)
 - Add a dry run mode
 - Generate a report with stats
-- Support for zsh
+- Support for zsh, it's history is encoded in metafield format: <https://www.zsh.org/mla/users/2011/msg00154.html>
 - Clean and remove temp file on error
 - Option to prompt the user for deletes
 - Remove old commands, either with date (if available) or with size
