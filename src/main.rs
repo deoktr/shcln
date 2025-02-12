@@ -25,8 +25,6 @@ use std::sync::{LazyLock, OnceLock};
 use clap::Parser;
 use regex::Regex;
 
-const BASH_HISTORY_FILE_PATH: &str = ".bash_history";
-
 static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
     [
         // non-targeted matches
@@ -75,7 +73,7 @@ static MATCH_LIST: LazyLock<[Regex; 53]> = LazyLock::new(|| {
         Regex::new(r"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-zA-Z0-9]{30,32})").unwrap(),
         Regex::new(r"https://hooks.slack.com/services/([A-Za-z0-9+/]{44,46})").unwrap(),
         Regex::new(r"(SK[0-9a-fA-F]{32})").unwrap(),
-        // FIXME: wrongly match `ssh user@localhost`
+        // FIXME: wrongly detect ssh
         // Regex::new(r"(([A-Za-z]*:(?://)?)([-;:&=\+\$,\w]+)@[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:/[\+~%/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?").unwrap(),
         Regex::new(r#"(?i)\b(AIza[0-9A-Za-z\\-_]{35})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
         Regex::new(r"https://outlook.office.com/webhook/([0-9a-f-]{36})/@").unwrap(),
@@ -109,7 +107,6 @@ impl fmt::Display for ShclnError {
     }
 }
 
-// return Err(ShclnError {shcln_err!("Failed to remove temp file '{tmp_path}': {error}")})
 macro_rules! shcln_err {
     ($message:tt) => {
         return Err(ShclnError {
@@ -122,9 +119,13 @@ macro_rules! shcln_err {
 #[derive(Parser)]
 #[command(version)]
 struct Cli {
-    /// User home directory (default: read HOME env)
+    /// User home directory [default: read HOME env]
     #[arg(long)]
     home: Option<PathBuf>,
+
+    /// Bash history file relative to home
+    #[arg(long, default_value = ".bash_history")]
+    bash_history: String,
 
     /// Keep temp backup file
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
@@ -144,11 +145,11 @@ fn main() {
 
     println!("cleaning home: {}", home_path.display());
 
-    clean_home(&home_path);
+    clean_home(&home_path, args.bash_history);
 }
 
-fn clean_home(home_path: &PathBuf) {
-    let base_path = home_path.join(BASH_HISTORY_FILE_PATH);
+fn clean_home(home_path: &PathBuf, bash_history: String) {
+    let base_path = home_path.join(bash_history);
     let history_path = base_path.display().to_string();
     let tmp_path = base_path.with_extension("bak").display().to_string();
 
@@ -346,6 +347,8 @@ mod tests {
         assert!(!rm_line("aws sso login --profile my-profile"));
         assert!(!rm_line("grep password foo.txt"));
         assert!(!rm_line("mkpasswd"));
+        assert!(!rm_line("ssh foo@10.0.0.1"));
+        assert!(!rm_line("ssh foo@localhost"));
         assert!(!rm_line("ssh user@localhost"));
 
         // match
