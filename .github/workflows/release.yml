@@ -1,0 +1,321 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag matches v<MAJOR>.<MINOR>.<PATCH>
+        run: |
+          if ! printf '%s' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Tag $GITHUB_REF_NAME is not exactly v<MAJOR>.<MINOR>.<PATCH>"
+            exit 1
+          fi
+
+      - name: Verify Cargo.toml version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          CRATE_VERSION="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
+          if [ "$TAG_VERSION" != "$CRATE_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match Cargo.toml version $CRATE_VERSION"
+            exit 1
+          fi
+
+      - name: Verify tag commit is reachable from main
+        run: |
+          git fetch origin main --depth=0
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points at a commit not reachable from main; refusing to release."
+            exit 1
+          fi
+
+      - name: Verify no existing release for this tag
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::A GitHub Release for $GITHUB_REF_NAME already exists. Delete it manually or cut a new version."
+            exit 1
+          fi
+
+  build:
+    needs: preflight
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            arch: x86_64
+            runner: ubuntu-latest
+            target_triple: x86_64-unknown-linux-gnu
+            cross_linker: ""
+          - os: linux
+            arch: aarch64
+            runner: ubuntu-latest
+            target_triple: aarch64-unknown-linux-gnu
+            cross_linker: aarch64-linux-gnu-gcc
+          - os: macos
+            arch: x86_64
+            runner: macos-13
+            target_triple: x86_64-apple-darwin
+            cross_linker: ""
+          - os: macos
+            arch: aarch64
+            runner: macos-14
+            target_triple: aarch64-apple-darwin
+            cross_linker: ""
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cross linker (Linux aarch64 only)
+        if: matrix.cross_linker != ""
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target_triple }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}-${{ matrix.target_triple }}
+
+      - name: Build release binary
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.cross_linker }}
+        run: cargo build --release --locked --target ${{ matrix.target_triple }}
+
+      - name: Smoke-test built binary (skip cross-compiled aarch64 Linux)
+        if: matrix.target_triple != 'aarch64-unknown-linux-gnu'
+        run: |
+          BIN="target/${{ matrix.target_triple }}/release/shcln"
+          OUT="$("$BIN" --version)"
+          echo "$OUT"
+          REPORTED="$(printf '%s' "$OUT" | awk '{print $NF}')"
+          EXPECTED="${GITHUB_REF_NAME#v}"
+          if [ "$REPORTED" != "$EXPECTED" ]; then
+            echo "::error::Built binary reports version $REPORTED but tag is $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Package tarball
+        run: |
+          mkdir -p dist
+          cp "target/${{ matrix.target_triple }}/release/shcln" dist/shcln
+          cp LICENSE README.md dist/
+          TARBALL="shcln-${GITHUB_REF_NAME}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz"
+          tar -czf "dist/$TARBALL" -C dist shcln LICENSE README.md
+          rm dist/shcln dist/LICENSE dist/README.md
+
+      - name: Verify tarball layout
+        run: |
+          TARBALL="dist/shcln-${GITHUB_REF_NAME}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz"
+          tar -tzf "$TARBALL" | sort > /tmp/entries.txt
+          printf '%s\n' LICENSE README.md shcln | sort > /tmp/expected.txt
+          if ! diff -u /tmp/expected.txt /tmp/entries.txt; then
+            echo "::error::tarball layout violation in $TARBALL"
+            exit 1
+          fi
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarball-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/shcln-*.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: [preflight, build]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Download all build artifacts into dist/
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: tarball-*
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        run: |
+          cd dist
+          sha256sum \
+            "shcln-${GITHUB_REF_NAME}-linux-x86_64.tar.gz" \
+            "shcln-${GITHUB_REF_NAME}-linux-aarch64.tar.gz" \
+            "shcln-${GITHUB_REF_NAME}-macos-x86_64.tar.gz" \
+            "shcln-${GITHUB_REF_NAME}-macos-aarch64.tar.gz" \
+            | sort > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Generate install.sh
+        run: |
+          cat > dist/install.sh <<'INSTALL_EOF'
+          #!/bin/sh
+          # Auto-generated installer for shcln from release workflow.
+          set -eu
+
+          OWNER_REPO="__OWNER_REPO__"
+          TAG="__TAG__"
+
+          err() {
+              printf 'error: %s\n' "$*" >&2
+              exit 1
+          }
+
+          uname_s="$(uname -s)"
+          case "$uname_s" in
+              Linux)  os=linux ;;
+              Darwin) os=macos ;;
+              *) err "Unsupported OS: $uname_s. shcln releases support Linux and macOS only." ;;
+          esac
+
+          uname_m="$(uname -m)"
+          case "$uname_m" in
+              x86_64|amd64)   arch=x86_64 ;;
+              arm64|aarch64)  arch=aarch64 ;;
+              *) err "Unsupported architecture: $uname_m. shcln releases support x86_64 and aarch64 only." ;;
+          esac
+
+          for tool in curl tar mktemp uname mkdir mv chmod rm; do
+              command -v "$tool" >/dev/null 2>&1 || err "Required tool '$tool' not found in PATH."
+          done
+          if command -v sha256sum >/dev/null 2>&1; then
+              SHACMD_BIN="sha256sum"
+              SHACMD_ARG=""
+          elif command -v shasum >/dev/null 2>&1; then
+              SHACMD_BIN="shasum"
+              SHACMD_ARG="-a 256"
+          else
+              err "Neither 'sha256sum' nor 'shasum' is available; cannot verify download."
+          fi
+
+          BASE="https://github.com/${OWNER_REPO}/releases/download/${TAG}"
+          ASSET="shcln-${TAG}-${os}-${arch}.tar.gz"
+
+          tmp="$(mktemp -d 2>/dev/null || mktemp -d -t shcln-install)"
+          trap 'rm -rf "$tmp"' EXIT INT HUP TERM
+
+          curl -fsSL --proto '=https' --tlsv1.2 -o "$tmp/$ASSET" "$BASE/$ASSET" \
+              || err "Could not download $ASSET from $BASE."
+
+          curl -fsSL --proto '=https' --tlsv1.2 -o "$tmp/SHA256SUMS" "$BASE/SHA256SUMS" \
+              || err "Could not download SHA256SUMS from $BASE; refusing to install."
+
+          (
+              cd "$tmp"
+              line="$(grep "  ${ASSET}\$" SHA256SUMS)" || err "No SHA256SUMS entry for $ASSET; refusing to install."
+              printf '%s\n' "$line" | $SHACMD_BIN $SHACMD_ARG -c - >/dev/null 2>&1
+          ) || err "Checksum mismatch for $ASSET; refusing to install."
+
+          tar -xzf "$tmp/$ASSET" -C "$tmp" \
+              || err "Failed to extract $ASSET."
+          [ -f "$tmp/shcln" ] || err "Tarball missing shcln binary; refusing to install."
+
+          install_dir="${SHCLN_INSTALL_DIR:-$HOME/.local/bin}"
+          mkdir -p "$install_dir" \
+              || err "Could not create install directory $install_dir. Set SHCLN_INSTALL_DIR to a writable path or run with the right permissions."
+
+          mv "$tmp/shcln" "$install_dir/shcln" \
+              || err "Could not move binary to $install_dir/shcln."
+          chmod +x "$install_dir/shcln" \
+              || err "Could not set executable bit on $install_dir/shcln."
+
+          on_path=0
+          IFS_OLD="$IFS"
+          IFS=':'
+          for p in $PATH; do
+              [ -z "$p" ] && continue
+              p_trimmed="${p%/}"
+              install_dir_trimmed="${install_dir%/}"
+              if [ "$p_trimmed" = "$install_dir_trimmed" ]; then
+                  on_path=1
+                  break
+              fi
+          done
+          IFS="$IFS_OLD"
+
+          if [ "$on_path" -ne 1 ]; then
+              printf 'warning: shcln was installed to %s, which is not on your PATH.\n' "$install_dir" >&2
+              printf 'To use it, add this line to your shell profile (~/.bashrc, ~/.zshrc, etc.):\n\n' >&2
+              printf '    export PATH="%s:$PATH"\n\n' "$install_dir" >&2
+              printf 'Then restart your shell or run: . ~/.bashrc  (or ~/.zshrc)\n' >&2
+          fi
+
+          version="${TAG#v}"
+          printf 'Installed shcln %s to %s/shcln\n' "$version" "$install_dir"
+          INSTALL_EOF
+          sed -i "s|__OWNER_REPO__|${GITHUB_REPOSITORY}|g; s|__TAG__|${GITHUB_REF_NAME}|g" dist/install.sh
+          chmod +x dist/install.sh
+
+      - name: Generate release notes
+        run: |
+          cat > release-notes.md <<'NOTES_EOF'
+          ## Install
+
+          ```bash
+          curl -fsSL https://github.com/__OWNER_REPO__/releases/download/__TAG__/install.sh | sh
+          ```
+
+          ## Custom install location
+
+          To install into a different directory, set `SHCLN_INSTALL_DIR`:
+
+          ```bash
+          SHCLN_INSTALL_DIR=/opt/bin curl -fsSL https://github.com/__OWNER_REPO__/releases/download/__TAG__/install.sh | sh
+          ```
+
+          ## Verifying integrity
+
+          The release ships a `SHA256SUMS` file covering all four platform tarballs. To verify a download manually:
+
+          ```bash
+          curl -fsSLO https://github.com/__OWNER_REPO__/releases/download/__TAG__/SHA256SUMS
+          curl -fsSLO https://github.com/__OWNER_REPO__/releases/download/__TAG__/shcln-__TAG__-linux-x86_64.tar.gz
+          sha256sum -c SHA256SUMS    # or `shasum -a 256 -c SHA256SUMS` on macOS
+          ```
+
+          ## Supported platforms
+
+          - Linux x86_64
+          - Linux aarch64
+          - macOS x86_64 (Intel)
+          - macOS aarch64 (Apple Silicon)
+          NOTES_EOF
+          sed -i "s|__OWNER_REPO__|${GITHUB_REPOSITORY}|g; s|__TAG__|${GITHUB_REF_NAME}|g" release-notes.md
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/shcln-${{ github.ref_name }}-linux-x86_64.tar.gz
+            dist/shcln-${{ github.ref_name }}-linux-aarch64.tar.gz
+            dist/shcln-${{ github.ref_name }}-macos-x86_64.tar.gz
+            dist/shcln-${{ github.ref_name }}-macos-aarch64.tar.gz
+            dist/SHA256SUMS
+            dist/install.sh
