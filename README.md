@@ -6,18 +6,20 @@ This project aims to work on both workstations and servers.
 
 Supports bash, and zsh history files.
 
-## Usage
+## Install
 
-Build:
+Installation:
 
 ```bash
-cargo build --release
+curl -fsSL https://github.com/deoktr/shcln/releases/latest/download/install.sh | sh
 ```
 
-Run:
+## Usage
+
+Run keeping a back-up of the original history file in case you want to roll-back:
 
 ```bash
-./target/release/shcln
+shcln --keep-tmp
 ```
 
 ## Alternatives
@@ -27,9 +29,7 @@ Run:
 ## TODO
 
 - Support for other shells: fish, nushell, tcsh, ksh
-- Add CI to release
 - Package with Nix
-- Update README.md to include installation
 - Update README.md to explain why it's important to clean history automatically
 - Add end-to-end tests with output verification to ensure all secrets are removed
 
