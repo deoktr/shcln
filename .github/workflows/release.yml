@@ -72,7 +72,7 @@ jobs:
             cross_linker: aarch64-linux-gnu-gcc
           - os: macos
             arch: x86_64
-            runner: macos-13
+            runner: macos-14
             target_triple: x86_64-apple-darwin
             cross_linker: ''
           - os: macos
@@ -102,8 +102,8 @@ jobs:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.cross_linker }}
         run: cargo build --release --locked --target ${{ matrix.target_triple }}
 
-      - name: Smoke-test built binary (skip cross-compiled aarch64 Linux)
-        if: matrix.target_triple != 'aarch64-unknown-linux-gnu'
+      - name: Smoke-test built binary (native legs only)
+        if: matrix.target_triple == 'x86_64-unknown-linux-gnu' || matrix.target_triple == 'aarch64-apple-darwin'
         run: |
           BIN="target/${{ matrix.target_triple }}/release/shcln"
           OUT="$("$BIN" --version)"
