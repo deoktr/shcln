@@ -64,7 +64,7 @@ jobs:
             arch: x86_64
             runner: ubuntu-latest
             target_triple: x86_64-unknown-linux-gnu
-            cross_linker: ""
+            cross_linker: ''
           - os: linux
             arch: aarch64
             runner: ubuntu-latest
@@ -74,17 +74,17 @@ jobs:
             arch: x86_64
             runner: macos-13
             target_triple: x86_64-apple-darwin
-            cross_linker: ""
+            cross_linker: ''
           - os: macos
             arch: aarch64
             runner: macos-14
             target_triple: aarch64-apple-darwin
-            cross_linker: ""
+            cross_linker: ''
     steps:
       - uses: actions/checkout@v4
 
       - name: Install cross linker (Linux aarch64 only)
-        if: matrix.cross_linker != ""
+        if: matrix.cross_linker != ''
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
