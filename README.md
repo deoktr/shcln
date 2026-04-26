@@ -1,8 +1,10 @@
 # shcln
 
-Shell history cleaner, remove password and other sensitive entries from shell history.
+Shell history cleaner (shcln), remove password and other sensitive entries from shell history.
 
 This project aims to work on both workstations and servers.
+
+Supports bash, and zsh history files.
 
 ## Usage
 
@@ -24,10 +26,13 @@ Run:
 
 ## TODO
 
-- Support for zsh, it's history is encoded in metafield format: <https://www.zsh.org/mla/users/2011/msg00154.html>
-- Support for other shells: zsh, fish, nushell, tcsh, ksh
-- Log only the hash of the secret to be able to compare it to a list and revoke it if needed
+- Support for other shells: fish, nushell, tcsh, ksh
+- Add CI to release
+- Package with Nix
+- Update README.md to include installation
+- Update README.md to explain why it's important to clean history automatically
+- Add end-to-end tests with output verification to ensure all secrets are removed
 
 ## License
 
-shcleaner is licensed under [MIT](./LICENSE).
+shcln is licensed under [MIT](./LICENSE).
