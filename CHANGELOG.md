@@ -9,3 +9,5 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 -->
 
 ## [Unreleased]
+
+- Upgrade dependencies.
