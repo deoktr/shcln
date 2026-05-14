@@ -37,6 +37,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: taiki-e/upload-rust-binary-action@f0d45ae91ee7b8ee928de7a9d04d893a08bcbec6 # v1
         with:
-          bin: gitsigner
+          bin: shcln
           target: ${{ matrix.target }}
           checksum: sha256
