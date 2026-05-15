@@ -1,6 +1,6 @@
 # shcln
 
-Shell history cleaner (shcln), remove password and other sensitive entries from shell history.
+Shell history cleaner (shcln), removes passwords, tokens, and other sensitive entries from shell history.
 
 This project aims to work on both workstations and servers.
 
@@ -8,11 +8,9 @@ Supports bash, and zsh history files.
 
 ## Why clean history automatically?
 
-Shell history files are written in plaintext and persist indefinitely. Anything typed at the prompt, like passwords, API tokens, database URLs with credentials, private keys pasted inline, bearer headers; ends up on disk, readable by anyone who gains access to the account.
+Anything typed at the prompt, like passwords, API tokens, database URLs with credentials, private keys pasted inline, bearer headers; ends up on disk, readable by anyone who gains access to the account.
 
-Shell history is a high-value target for **supply chain attackers**. Recent incidents involving malicious npm, PyPI, and VS Code marketplace packages have included payloads that exfiltrate **shell history** to attacker-controlled servers.
-
-You cannot reliably prevent every malicious package from running, but you can shrink the reward. 
+Shell history is a high-value target for supply chain attackers, recent incidents involving malicious npm, PyPI, and VS Code marketplace packages have included payloads that exfiltrate it to attacker-controlled servers.
 
 Manual cleanup does not scale and is easy to forget.
 
