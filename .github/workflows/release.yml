@@ -6,20 +6,12 @@ permissions:
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - 'v[0-9]+.[0-9]+.[0-9]+(-.*)?'
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: taiki-e/create-gh-release-action@eba8ea96c86cca8a37f1b56e94b4d13301fba651 # v1
-
-  upload-assets:
-    needs: create-release
+  build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
@@ -31,12 +23,89 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-latest
     runs-on: ${{ matrix.os }}
+    env:
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install cross linker (aarch64-unknown-linux-gnu only)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >>"$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          rustup target add "$TARGET"
+          cargo build --release --locked --target "$TARGET"
+          mv "target/${TARGET}/release" shcln-${{ matrix.target }}
+          shasum -a 256 shcln-${{ matrix.target }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: assets-${{ matrix.target }}
+          path: |
+            shcln-${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 1
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: taiki-e/upload-rust-binary-action@f0d45ae91ee7b8ee928de7a9d04d893a08bcbec6 # v1
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
         with:
-          bin: shcln
-          target: ${{ matrix.target }}
-          checksum: sha256
+          pattern: assets-*
+          path: dist
+          merge-multiple: true
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            /^##[ \t]/ {
+              if (insec) { found = 1; exit }
+              title = $0
+              sub(/^##[ \t]+/, "", title)
+              sub(/^\[/, "", title)
+              sub(/^(v|Version |Release )/, "", title)
+              split(title, parts, /[ \t]/)
+              sub(/\]$/, "", parts[1])
+              insec = (parts[1] == ver)
+              started = 0
+              blanks = 0
+              next
+            }
+            insec {
+              if ($0 ~ /^[ \t]*$/) { if (started) blanks++; next }
+              while (blanks > 0) { print ""; blanks-- }
+              started = 1
+              print
+            }
+            END { if (insec || found) exit 0; exit 1 }
+          ' CHANGELOG.md >release-notes.md || {
+            echo "::error::no section for version '${version}' found in CHANGELOG.md"
+            exit 1
+          }
+          cat release-notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          # never overwrite a release that already exists for this tag
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::release '${tag}' already exists; delete it manually to re-run"
+            exit 1
+          fi
+          opts=(--title "$tag" --notes-file release-notes.md)
+          if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+            opts+=(--prerelease)
+          fi
+          gh release create "$tag" "${opts[@]}" dist/*

@@ -10,5 +10,10 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
-- Refactor source.
-- Upgrade dependencies.
+## [0.6.0] - 2026-10-18
+
+### Changed
+
+- Refactor source
+- Upgrade dependencies
+- Update the release CI

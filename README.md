@@ -8,19 +8,19 @@ Supports bash, and zsh history files.
 
 ## Why clean history automatically?
 
-Anything typed at the prompt, like passwords, API tokens, database URLs with credentials, private keys pasted inline, bearer headers; ends up on disk, readable by anyone who gains access to the account.
+Anything typed at the prompt, like passwords, API tokens, database URLs with credentials, private keys pasted inline, bearer headers; ends up on disk, readable by any other program.
 
 Shell history is a high-value target for supply chain attackers, recent incidents involving malicious npm, PyPI, and VS Code marketplace packages have included payloads that exfiltrate it to attacker-controlled servers.
 
 Manual cleanup does not scale and is easy to forget.
 
-Running `shcln` on a regular schedule, for example from a systemd user timer, a cron job, or a shell logout hook, keeps the window of exposure short without requiring you to remember to do it.
+Running `shcln` on a regular schedule, for example from a systemd user timer, a cron job, or a shell logout hook, keeps the window of exposure short without requiring you to remember to do it manually.
 
 ## Install
 
-Installation from CI pre-build releases.
+Installation from CI pre-built releases.
 
-First select the target based on your host, check releases for full list:
+First select the target based on your host, check releases for the full list:
 
 ```bash
 # Linux x86_64
@@ -32,18 +32,12 @@ export TARGET="shcln-aarch64-apple-darwin"
 Download and install:
 
 ```bash
-# download and verify
-curl -fsSL -O https://github.com/deoktr/shcln/releases/latest/download/${TARGET}.tar.gz
-curl -fsSL -O https://github.com/deoktr/shcln/releases/latest/download/${TARGET}.sha256
-sha256sum -c "${TARGET}.sha256"
+# download the binary
+curl -fsSL -O "https://github.com/deoktr/shcln/releases/latest/download/${TARGET}"
 
-# install
-tar -xzf "${TARGET}.tar.gz"
-chmod 755 shcln
-mv shcln ~/.local/bin/shcln
-
-# clean
-rm "${TARGET}.sha256" "${TARGET}.tar.gz"
+# install for your user
+chmod 755 "${TARGET}"
+mv "${TARGET}" ~/.local/bin/shcln
 
 # verify install
 shcln --version
