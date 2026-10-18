@@ -10,6 +10,11 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add musl builds for Linux targets to the release CI
+- Build release binaries with `cargo auditable` so they embed their dependency tree and can be scanned for known vulnerabilities
+
 ## [0.6.0] - 2026-10-18
 
 ### Changed
