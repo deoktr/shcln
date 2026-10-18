@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-18
+
 ### Added
 
 - Add musl builds for Linux targets to the release CI
