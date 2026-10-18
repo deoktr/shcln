@@ -39,7 +39,7 @@ jobs:
         run: |
           rustup target add "$TARGET"
           cargo build --release --locked --target "$TARGET"
-          mv "target/${TARGET}/release" shcln-${{ matrix.target }}
+          mv "target/${TARGET}/release/shcln" shcln-${{ matrix.target }}
           shasum -a 256 shcln-${{ matrix.target }}
 
       - uses: actions/upload-artifact@v7
