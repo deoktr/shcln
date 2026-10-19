@@ -39,9 +39,21 @@ curl -fsSL -O "https://github.com/deoktr/shcln/releases/latest/download/${TARGET
 chmod 755 "${TARGET}"
 mv "${TARGET}" ~/.local/bin/shcln
 
-# verify install
+# test install
 shcln --version
 ```
+
+### Verify a release
+
+Release binaries carry a [SLSA build provenance](https://slsa.dev/spec/v1.0/provenance) attestation, signed keyless via [Sigstore](https://www.sigstore.dev/) and recorded in GitHub's attestation store. This proves the binary was built by this repo's CI inside GitHub Actions, and matches it to the exact build.
+
+After downloading a binary, verify it with the GitHub CLI:
+
+```bash
+gh attestation verify "${TARGET}" --owner deoktr
+```
+
+A successful check prints `Verification succeeded` and confirms the artifact was built by the `deoktr/shcln` GitHub Actions workflow.
 
 ### From Source
 

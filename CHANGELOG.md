@@ -10,6 +10,12 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-10-19
+
+### Added
+
+- Add SLSA build provenance attestation for releases
+
 ## [0.6.1] - 2026-10-18
 
 ### Added

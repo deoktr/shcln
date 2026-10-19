@@ -25,6 +25,10 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-latest
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     env:
       TARGET: ${{ matrix.target }}
     steps:
@@ -53,6 +57,11 @@ jobs:
           cargo auditable build --release --locked --target "$TARGET"
           mv "target/${TARGET}/release/shcln" shcln-${{ matrix.target }}
           shasum -a 256 shcln-${{ matrix.target }}
+
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: shcln-${{ matrix.target }}
 
       - uses: actions/upload-artifact@v7
         with:
