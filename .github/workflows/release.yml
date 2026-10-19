@@ -8,6 +8,10 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     strategy:
@@ -19,7 +23,9 @@ jobs:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-26.04-arm
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-26.04-arm
           - target: x86_64-apple-darwin
             os: macos-latest
           - target: aarch64-apple-darwin
@@ -32,21 +38,14 @@ jobs:
     env:
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install audit tooling
         run: |
           cargo install cargo-auditable --version 0.7.7 --locked
 
-      - name: Install cross linker (aarch64-unknown-linux-gnu only)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >>"$GITHUB_ENV"
-
-      - name: Install musl tools (x86_64-unknown-linux-musl only)
-        if: matrix.target == 'x86_64-unknown-linux-musl'
+      - name: Install musl tools (musl targets only)
+        if: contains(matrix.target, 'musl')
         run: |
           sudo apt-get update
           sudo apt-get install -y musl-tools
@@ -59,11 +58,11 @@ jobs:
           shasum -a 256 shcln-${{ matrix.target }}
 
       - name: Attest build provenance
-        uses: actions/attest@v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: shcln-${{ matrix.target }}
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: assets-${{ matrix.target }}
           path: |
@@ -77,9 +76,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: assets-*
           path: dist

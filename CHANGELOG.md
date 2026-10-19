@@ -10,6 +10,17 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-10-19
+
+### Changed
+
+- Pin CI actions to specific commits
+- Release CI for ARM run on `ubuntu-26.04-arm`
+
+### Fixed
+
+- Concurrency issue in release CI
+
 ## [0.6.2] - 2026-10-19
 
 ### Added
