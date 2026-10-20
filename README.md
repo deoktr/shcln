@@ -36,12 +36,13 @@ Download and install:
 curl -fsSL -O "https://github.com/deoktr/shcln/releases/latest/download/${TARGET}"
 
 # install for your user
-chmod 755 "${TARGET}"
-mv "${TARGET}" ~/.local/bin/shcln
+install -m 0755 "${TARGET}" ~/.local/bin/shcln
 
 # test install
 shcln --version
 ```
+
+Ensure `export PATH="$HOME/.local/bin:$PATH"` is in `~/.bashrc` or `~/.zshrc`.
 
 ### Verify a release
 
