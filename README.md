@@ -1,6 +1,7 @@
 # shcln
 
-Shell history cleaner (shcln), removes passwords, tokens, and other sensitive entries from shell history.
+Shell history cleaner (shcln), removes passwords, tokens, and other sensitive
+entries from your shell history.
 
 This project aims to work on both workstations and servers.
 
@@ -8,13 +9,19 @@ Supports bash, and zsh history files.
 
 ## Why clean history automatically?
 
-Anything typed at the prompt, like passwords, API tokens, database URLs with credentials, private keys pasted inline, bearer headers; ends up on disk, readable by any other program.
+Anything typed at the prompt, like passwords, API tokens, database URLs with
+credentials, private keys pasted inline, bearer headers; ends up on disk,
+readable by any other program.
 
-Shell history is a high-value target for supply chain attackers, recent incidents involving malicious npm, PyPI, and VS Code marketplace packages have included payloads that exfiltrate it to attacker-controlled servers.
+Shell history is a high-value target for supply chain attackers, recent
+incidents involving malicious npm, PyPI, and VS Code marketplace packages have
+included payloads that exfiltrate it to attacker-controlled servers.
 
 Manual cleanup does not scale and is easy to forget.
 
-Running `shcln` on a regular schedule, for example from a systemd user timer, a cron job, or a shell logout hook, keeps the window of exposure short without requiring you to remember to do it manually.
+Running `shcln` on a regular schedule, for example from a systemd user timer, a
+cron job, or a shell logout hook, keeps the window of exposure short without
+requiring you to remember to do it manually.
 
 ## Install
 
@@ -46,7 +53,11 @@ Ensure `export PATH="$HOME/.local/bin:$PATH"` is in `~/.bashrc` or `~/.zshrc`.
 
 ### Verify a release
 
-Release binaries carry a [SLSA build provenance](https://slsa.dev/spec/v1.0/provenance) attestation, signed keyless via [Sigstore](https://www.sigstore.dev/) and recorded in GitHub's attestation store. This proves the binary was built by this repo's CI inside GitHub Actions, and matches it to the exact build.
+Release binaries carry a
+[SLSA build provenance](https://slsa.dev/spec/v1.0/provenance) attestation,
+signed keyless via [Sigstore](https://www.sigstore.dev/) and recorded in
+GitHub's attestation store. This proves the binary was built by this repo's CI
+inside GitHub Actions, and matches it to the exact build.
 
 After downloading a binary, verify it with the GitHub CLI:
 
@@ -54,11 +65,12 @@ After downloading a binary, verify it with the GitHub CLI:
 gh attestation verify "${TARGET}" --owner deoktr
 ```
 
-A successful check prints `Verification succeeded` and confirms the artifact was built by the `deoktr/shcln` GitHub Actions workflow.
+A successful check prints `Verification succeeded` and confirms the artifact was
+built by the `deoktr/shcln` GitHub Actions workflow.
 
 ### From Source
 
-Installation from source:
+Installation from source with cargo:
 
 ```bash
 cargo install --git https://github.com/deoktr/shcln
@@ -66,11 +78,21 @@ cargo install --git https://github.com/deoktr/shcln
 
 ## Usage
 
-Run keeping a back-up of the original history file in case you want to roll-back:
+Preview which entries would be removed, without touching the history files:
 
 ```bash
-shcln --keep-tmp
+shcln --dry-run
 ```
+
+Clean the history files:
+
+```bash
+shcln
+```
+
+Removed entries are counted, not printed, so a run scheduled by systemd or cron
+does not copy the secrets it removes into the journal. Use `--print-removed` to
+see them on an interactive terminal.
 
 ### Run on a schedule with systemd
 
@@ -135,7 +157,8 @@ command -v shcln >/dev/null 2>&1 && shcln >/dev/null 2>&1
 
 ## TODO
 
-- Add end-to-end tests with output verification to ensure all secrets are removed
+- Add end-to-end tests with output verification to ensure all secrets are
+  removed
 
 ## License
 

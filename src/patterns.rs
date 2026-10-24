@@ -166,8 +166,6 @@ pub fn rm_line(line: &str) -> bool {
             // let secret = caps.get(1).unwrap();
             // println!("secret: {}", secret.as_str());
 
-            println!("removed: {}", line.trim_end());
-
             return true;
         }
     }

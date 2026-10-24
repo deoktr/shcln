@@ -1,106 +1,139 @@
-use std::fs::{copy, remove_file, File};
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufRead, BufReader};
+use std::path::Path;
 
-use crate::config::KEEP_TMP;
+use crate::cleaner::{clean_history, Entry};
+use crate::config::Config;
 use crate::error::ShclnError;
 use crate::patterns::rm_line;
 
 /// Clean a bash history file.
-pub fn clean_bash_history(history_path: &str, tmp_path: &str) -> Result<u32, ShclnError> {
-    match copy(history_path, tmp_path) {
-        Ok(_) => (),
-        Err(error) => {
-            return Err(ShclnError {
-                message: format!("Failed to copy '{history_path}' to '{tmp_path}': {error}"),
-            })
-        }
-    };
+pub fn clean_bash_history(history_path: &Path, config: &Config) -> Result<u32, ShclnError> {
+    clean_history(history_path, config, |file| {
+        BashEntries::new(BufReader::new(file))
+    })
+}
 
-    let history_file = match File::create(history_path) {
-        Ok(file) => file,
-        Err(error) => {
-            return Err(ShclnError {
-                message: format!("Failed to open '{history_path}': {error}"),
-            })
-        }
-    };
-    let tmp_file = match File::open(tmp_path) {
-        Ok(file) => file,
-        Err(error) => {
-            return Err(ShclnError {
-                message: format!("Failed to create '{tmp_path}': {error}"),
-            })
-        }
-    };
+/// Frames a bash history file into one entry per line.
+///
+/// Entries are handled as raw bytes: bash writes whatever was typed in the
+/// locale's encoding, so a history file is not guaranteed to be valid UTF-8.
+/// Undecodable bytes are replaced for matching only, the entry itself is always
+/// written back verbatim.
+pub struct BashEntries<R: BufRead> {
+    reader: R,
+}
 
-    let mut writer = BufWriter::new(history_file);
-    let mut reader = BufReader::new(tmp_file);
+impl<R: BufRead> BashEntries<R> {
+    pub fn new(reader: R) -> Self {
+        Self { reader }
+    }
+}
 
-    let mut removed: u32 = 0;
-    let mut line = String::new();
+impl<R: BufRead> Iterator for BashEntries<R> {
+    type Item = Result<Entry, ShclnError>;
 
-    loop {
-        match reader.read_line(&mut line) {
-            Ok(b) => {
-                if b == 0 {
-                    break;
-                }
-            }
-            Err(ref error) if error.kind() == std::io::ErrorKind::InvalidData => {
-                // ignore invalid UTF-8 errors
-                println!(
-                    "{}",
-                    ShclnError {
-                        message: format!("Failed to read line from '{tmp_path}': {error}")
-                    }
-                );
-                continue;
-            }
-            Err(error) => {
-                return Err(ShclnError {
-                    message: format!("Failed to read line from '{tmp_path}': {error}"),
-                })
-            }
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut line: Vec<u8> = Vec::new();
+
+        match self.reader.read_until(b'\n', &mut line) {
+            Ok(0) => None,
+            Ok(_) => Some(Ok(match_entry(line))),
+            Err(error) => Some(Err(ShclnError {
+                message: format!("Failed to read history: {error}"),
+            })),
         }
+    }
+}
 
-        if line.trim_end().len() == 0 {
-            continue;
-        }
+fn match_entry(raw: Vec<u8>) -> Entry {
+    let text = String::from_utf8_lossy(&raw);
+    let matched = rm_line(text.trim_end()).then(|| text.trim_end().to_string());
 
-        if !rm_line(&line.trim_end()) {
-            match writer.write(line.as_bytes()) {
-                Ok(_) => (),
-                Err(error) => {
-                    return Err(ShclnError {
-                        message: format!("Failed to write line to '{history_path}': {error}"),
-                    })
-                }
-            };
-        } else {
-            removed += 1;
-        }
-        line.clear();
+    match matched {
+        Some(matched) => Entry::remove(raw, &matched),
+        None => Entry::keep(raw),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn entries(history: &[u8]) -> Vec<Vec<u8>> {
+        BashEntries::new(history)
+            .map(|entry| entry.unwrap().raw)
+            .collect()
     }
 
-    match writer.flush() {
-        Ok(_) => (),
-        Err(error) => {
-            return Err(ShclnError {
-                message: format!("Failed to flush '{history_path}': {error}"),
+    fn kept(history: &[u8]) -> Vec<u8> {
+        BashEntries::new(history)
+            .flat_map(|entry| {
+                let entry = entry.unwrap();
+                match entry.matched {
+                    None => entry.raw,
+                    Some(_) => Vec::new(),
+                }
             })
-        }
-    };
-
-    if !KEEP_TMP.get().unwrap() {
-        match remove_file(tmp_path) {
-            Ok(_) => (),
-            Err(error) => {
-                return Err(ShclnError {
-                    message: format!("Failed to remove temp file '{tmp_path}': {error}"),
-                })
-            }
-        };
+            .collect()
     }
 
-    Ok(removed)
+    #[test]
+    fn test_entries_are_lines() {
+        assert_eq!(entries(b"ls\npwd\n"), [b"ls\n".to_vec(), b"pwd\n".to_vec()]);
+
+        // a last line without a newline is an entry of its own
+        assert_eq!(entries(b"ls\npwd"), [b"ls\n".to_vec(), b"pwd".to_vec()]);
+        assert_eq!(entries(b""), Vec::<Vec<u8>>::new());
+    }
+
+    #[test]
+    fn test_invalid_utf8_is_kept() {
+        let history: &[u8] = b"ls\ncafe-\xff-\xfe-bad\npwd\n";
+        assert_eq!(kept(history), history);
+    }
+
+    #[test]
+    fn test_blank_lines_are_kept() {
+        let history = b"ls\n\n\npwd\n";
+        assert_eq!(kept(history), history);
+    }
+
+    #[test]
+    fn test_secret_is_removed() {
+        assert_eq!(kept(b"ls\nexport GITHUB_TOKEN=abc123\npwd\n"), b"ls\npwd\n");
+    }
+
+    /// A blank line used to be left in the read buffer and glued to the next
+    /// entry, shifting every match by one line.
+    #[test]
+    fn test_blank_line_does_not_leak_into_next_entry() {
+        let history = b"ls\n\nexport AWS_SECRET_ACCESS_KEY=supersecretvalue\n";
+
+        assert_eq!(
+            entries(history),
+            [
+                b"ls\n".to_vec(),
+                b"\n".to_vec(),
+                b"export AWS_SECRET_ACCESS_KEY=supersecretvalue\n".to_vec(),
+            ]
+        );
+        assert_eq!(kept(history), b"ls\n\n");
+    }
+
+    #[test]
+    fn test_read_error_is_reported() {
+        struct Failing;
+
+        impl std::io::Read for Failing {
+            fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
+                Err(std::io::Error::other("disk on fire"))
+            }
+        }
+
+        let error = BashEntries::new(BufReader::new(Failing))
+            .next()
+            .unwrap()
+            .unwrap_err();
+        assert!(error.message.contains("disk on fire"));
+    }
 }
