@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 
-static MATCH_LIST: LazyLock<[Regex; 139]> = LazyLock::new(|| {
+static MATCH_LIST: LazyLock<[Regex; 151]> = LazyLock::new(|| {
     [
         // targeted matches
         Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.*-S"#).unwrap(),
@@ -15,16 +15,32 @@ static MATCH_LIST: LazyLock<[Regex; 139]> = LazyLock::new(|| {
         Regex::new(r"ghp_[0-9a-zA-Z]{36}").unwrap(),
         Regex::new(r"gho_[0-9a-zA-Z]{36}").unwrap(),
         Regex::new(r"(ghu|ghs)_[0-9a-zA-Z]{36}").unwrap(),
+        Regex::new(r"\b(github_pat_[0-9a-zA-Z_]{22,})\b").unwrap(),
         Regex::new(r"ghr_[0-9a-zA-Z]{36}").unwrap(),
         Regex::new(r"glpat-[0-9a-zA-Z-_]{20}").unwrap(),
         Regex::new(r#"(?i)(?:heroku)(?:[0-9a-z\-_\t .]{0,20})(?:[\s|']|[\s|"]){0,3}(?:=|>|:=|\|\|:|<=|=>|:)(?:'|"|\s|=|\x60){0,5}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
-        Regex::new(r#""key-[0-9a-zA-Z]{32}""#).unwrap(), // MailGun API Key
+        // MailGun API Key
+        Regex::new(r#""key-[0-9a-zA-Z]{32}""#).unwrap(),
         Regex::new(r"(?i)[0-9a-f]{32}-us[0-9]{1,2}").unwrap(),
         Regex::new(r"(SG.[0-9A-Za-z\-_]{15,30}\.[0-9A-Za-z\-_]{15,30})").unwrap(),
         Regex::new(r"(SG\.[0-9A-Za-z\-_]{22}\.[0-9A-Za-z\-_]{43})").unwrap(),
         Regex::new(r"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-zA-Z0-9]{30,32})").unwrap(),
         Regex::new(r"https://hooks.slack.com/services/([A-Za-z0-9+/]{44,46})").unwrap(),
         Regex::new(r"(SK[0-9a-fA-F]{32})").unwrap(),
+        // AWS access key id (AKIA/ASIA/...), also catches temporary keys
+        Regex::new(r"\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[0-9A-Z]{16})\b").unwrap(),
+        // Stripe secret, publishable and restricted keys
+        Regex::new(r"\b((?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{16,})\b").unwrap(),
+        // OpenAI API key (legacy)
+        Regex::new(r"\b(sk-[0-9a-zA-Z]{20}T3BlbkFJ[0-9a-zA-Z]{20})\b").unwrap(),
+        // OpenAI API key (project / service account scoped)
+        Regex::new(r"\b(sk-(?:proj|svc)-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
+        // Anthropic API key
+        Regex::new(r"\b(sk-ant-(?:api|sid)[0-9]{2}-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
+        Regex::new(r"\b(npm_[0-9a-zA-Z]{36})\b").unwrap(),
+        Regex::new(r"\b(pypi-[0-9a-zA-Z\-_]{50,})\b").unwrap(),
+        // HashiCorp Vault token
+        Regex::new(r"\b(hv[bsp]\.[0-9a-zA-Z\-_]{20,})\b").unwrap(),
         // FIXME: wrongly detect ssh
         // Regex::new(r"(([A-Za-z]*:(?://)?)([-;:&=\+\$,\w]+)@[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:/[\+~%/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?").unwrap(),
         Regex::new(r#"(?i)\b(AIza[0-9A-Za-z\\-_]{35})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
@@ -37,6 +53,13 @@ static MATCH_LIST: LazyLock<[Regex; 139]> = LazyLock::new(|| {
         Regex::new(r"(EAACEdEose0cBA[0-9A-Za-z]+)").unwrap(),
         Regex::new(r#"(?i)(?:datadog)(?:[0-9a-z\-_\t .]{0,20})(?:\[s|']|[\s|"]){0,3}(?:=|>|:=|\|\|:|<=|=>|:)(?:'|"|\s|=|\x60){0,5}([a-z0-9]{40})(?:['|"|\n|\r|\s|\x60|;]|$)"#).unwrap(),
         Regex::new(r"diskutil.*passphrase ([[:alpha:][:punct:]]{1,200}).*").unwrap(),
+        // Discord webhook url
+        Regex::new(r"(discord(?:app)?\.com/api/webhooks/[0-9]{17,}/[0-9A-Za-z_-]+)").unwrap(),
+        // private key pasted inline
+        Regex::new(r"(-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----)").unwrap(),
+        // Azure storage account connection string key
+        Regex::new(r"(AccountKey=[A-Za-z0-9+/]{40,}={0,2})").unwrap(),
+        // env vars
         Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r#"GITHUB_TOKEN=["']?([0-9a-zA-Z*_/+]{1,100})["']?"#).unwrap(),
@@ -279,6 +302,47 @@ mod tests {
         assert!(rm_line("curl -u 'admin:foobar123!' http://example.com/"));
         assert!(rm_line(
             "curl -H \"Authorization: Basic foobar123\" http://example.com/"
+        ));
+    }
+
+    #[test]
+    fn test_rm_line_specific_credentials() {
+        // no match
+        assert!(!rm_line("ssh://git@github.com"));
+        assert!(!rm_line("git clone https://github.com/user/repo"));
+        assert!(!rm_line("curl https://example.com:8080/path"));
+        assert!(!rm_line(
+            "curl -H \"Content-Type: application/json\" https://example.com"
+        ));
+        assert!(!rm_line("cat -----BEGIN CERTIFICATE-----"));
+        assert!(!rm_line("cat -----BEGIN PUBLIC KEY-----"));
+        assert!(!rm_line("pip install pypi-metadata-exporter"));
+        assert!(!rm_line("AKIA123"));
+        assert!(!rm_line("sk-ant-not-a-real-key"));
+
+        // match
+        assert!(rm_line("AKIAIOSFODNN7EXAMPLE"));
+        assert!(rm_line("aws sts get-session-token ASIAIOSFODNN7EXAMPLE"));
+        assert!(rm_line("sk_live_1234567890abcdefghijkl"));
+        assert!(rm_line("pk_test_1234567890abcdefghijkl"));
+        assert!(rm_line(
+            "sk-abcdefghij0123456789T3BlbkFJabcdefghij0123456789"
+        ));
+        assert!(rm_line("sk-proj-abcdefghijklmnop"));
+        assert!(rm_line("sk-ant-api03-abcdefghijklmnop"));
+        assert!(rm_line("github_pat_abcdefghijklmnopqrstuv"));
+        assert!(rm_line("npm_abcdefghijklmnopqrstuvwxyz0123456789"));
+        assert!(rm_line(
+            "pypi-012345678901234567890123456789012345678901234567890123456789"
+        ));
+        assert!(rm_line("hvs.abcdefghijklmnopqrstuvwx"));
+        assert!(rm_line(
+            "curl https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnop"
+        ));
+        assert!(rm_line("echo \"-----BEGIN OPENSSH PRIVATE KEY-----\""));
+        assert!(rm_line("cat <<'EOF' -----BEGIN RSA PRIVATE KEY----- EOF"));
+        assert!(rm_line(
+            "DefaultEndpointsProtocol=https;AccountName=x;AccountKey=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOP==;EndpointSuffix=core.windows.net"
         ));
     }
 }
