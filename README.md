@@ -159,6 +159,9 @@ command -v shcln >/dev/null 2>&1 && shcln >/dev/null 2>&1
 
 - Add end-to-end tests with output verification to ensure all secrets are
   removed
+- Output hashed secrets to be able to compare to a database, in order to revoke 
+  them if needed, must first ensure the actual secret is correctly selected in 
+  regex
 
 ## License
 
