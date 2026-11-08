@@ -1,9 +1,9 @@
 [package]
 name = "shcln"
-version = "0.6.4"
+version = "0.7.1"
 edition = "2021"
 authors = ["deoktr"]
-license = "GPLv3"
+license = "MIT"
 description = "Shell history cleaner tool"
 readme = "README.md"
 homepage = "https://github.com/deoktr/shcln"

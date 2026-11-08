@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 
-static MATCH_LIST: LazyLock<[Regex; 151]> = LazyLock::new(|| {
+static MATCH_LIST: LazyLock<[Regex; 176]> = LazyLock::new(|| {
     [
         // targeted matches
         Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.*-S"#).unwrap(),
@@ -33,10 +33,10 @@ static MATCH_LIST: LazyLock<[Regex; 151]> = LazyLock::new(|| {
         Regex::new(r"\b((?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{16,})\b").unwrap(),
         // OpenAI API key (legacy)
         Regex::new(r"\b(sk-[0-9a-zA-Z]{20}T3BlbkFJ[0-9a-zA-Z]{20})\b").unwrap(),
-        // OpenAI API key (project / service account scoped)
-        Regex::new(r"\b(sk-(?:proj|svc)-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
+        // OpenAI API key (project / service account / admin scoped)
+        Regex::new(r"\b(sk-(?:proj|svcacct|admin)-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
         // Anthropic API key
-        Regex::new(r"\b(sk-ant-(?:api|sid)[0-9]{2}-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
+        Regex::new(r"\b(sk-ant-(?:api|sid|admin)[0-9]{2}-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
         Regex::new(r"\b(npm_[0-9a-zA-Z]{36})\b").unwrap(),
         Regex::new(r"\b(pypi-[0-9a-zA-Z\-_]{50,})\b").unwrap(),
         // HashiCorp Vault token
@@ -44,6 +44,42 @@ static MATCH_LIST: LazyLock<[Regex; 151]> = LazyLock::new(|| {
         // FIXME: wrongly detect ssh
         // Regex::new(r"(([A-Za-z]*:(?://)?)([-;:&=\+\$,\w]+)@[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:/[\+~%/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?").unwrap(),
         Regex::new(r#"(?i)\b(AIza[0-9A-Za-z\\-_]{35})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
+        // Hugging Face access token and organization token
+        Regex::new(r"\b(hf_[a-z]{34})\b").unwrap(),
+        Regex::new(r"\b(api_org_[a-z]{34})\b").unwrap(),
+        // Groq
+        Regex::new(r"\b(gsk_[0-9a-zA-Z]{48})\b").unwrap(),
+        // Replicate
+        Regex::new(r"\b(r8_[0-9a-zA-Z]{40})\b").unwrap(),
+        // Perplexity
+        Regex::new(r"\b(pplx-[0-9a-zA-Z]{48})\b").unwrap(),
+        // xAI / Grok
+        Regex::new(r"\b(xai-[0-9a-zA-Z]{40,})\b").unwrap(),
+        // OpenRouter
+        Regex::new(r"\b(sk-or-v1-[0-9a-zA-Z]{40,})\b").unwrap(),
+        // DeepSeek (bare sk- prefix followed by hex)
+        Regex::new(r"\b(sk-[0-9a-f]{32,})\b").unwrap(),
+        // Mistral
+        Regex::new(r"(?i)\b(mistral-[0-9a-zA-Z]{16,})\b").unwrap(),
+        // Fireworks AI
+        Regex::new(r"\b(fw_[0-9a-zA-Z]{30,})\b").unwrap(),
+        // Jina AI
+        Regex::new(r"\b(jina_[0-9a-zA-Z]{20,})\b").unwrap(),
+        // Voyage AI
+        Regex::new(r"\b(pa-[0-9a-zA-Z]{32,})\b").unwrap(),
+        // Pinecone
+        Regex::new(r"\b(pcsk_[0-9a-zA-Z]{30,})\b").unwrap(),
+        // NVIDIA NGC (build.nvidia.com)
+        Regex::new(r"\b(nvapi-[0-9a-zA-Z]{30,})\b").unwrap(),
+        // LangSmith (LangChain)
+        Regex::new(r"\b(lsv2_[0-9a-zA-Z_-]{20,})\b").unwrap(),
+        // Cerebras
+        Regex::new(r"\b(csk-[0-9a-zA-Z]{30,})\b").unwrap(),
+        // ElevenLabs
+        Regex::new(r"\b(sk_[0-9a-zA-Z]{24,})\b").unwrap(),
+        // Amazon Bedrock (long-lived and short-lived API keys)
+        Regex::new(r"\b(ABSK[A-Za-z0-9+/=]{40,})\b").unwrap(),
+        Regex::new(r"bedrock-api-key-YmVkcm9jay5hbWF6b25hd3MuY29t").unwrap(),
         Regex::new(r"https://outlook.office.com/webhook/([0-9a-f-]{36})/@").unwrap(),
         Regex::new(r"oy2[a-z0-9]{43}").unwrap(),
         Regex::new(r#"(?i)twitter(.{0,20})?[''"]([0-9a-z]{35,44})[''"]"#).unwrap(),
@@ -55,10 +91,23 @@ static MATCH_LIST: LazyLock<[Regex; 151]> = LazyLock::new(|| {
         Regex::new(r"diskutil.*passphrase ([[:alpha:][:punct:]]{1,200}).*").unwrap(),
         // Discord webhook url
         Regex::new(r"(discord(?:app)?\.com/api/webhooks/[0-9]{17,}/[0-9A-Za-z_-]+)").unwrap(),
-        // private key pasted inline
-        Regex::new(r"(-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----)").unwrap(),
+        // private key pasted inline: OpenSSH native, PEM (RSA/DSA/EC),
+        // PKCS#8, encrypted, and PGP armored private key blocks
+        Regex::new(r"(?i)(-----BEGIN[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----)").unwrap(),
         // Azure storage account connection string key
         Regex::new(r"(AccountKey=[A-Za-z0-9+/]{40,}={0,2})").unwrap(),
+        // MongoDB connection string with credentials
+        Regex::new(r#"(?i)\bmongodb(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+"#).unwrap(),
+        // MySQL connection string with credentials (also matches JDBC and SQLAlchemy URIs)
+        Regex::new(r#"(?i)\bmysql(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+"#).unwrap(),
+        // PostgreSQL connection string with credentials (also matches JDBC and SQLAlchemy URIs)
+        Regex::new(r#"(?i)\bpostgres(?:ql)?(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+"#).unwrap(),
+        // key/value connection strings for MySQL and PostgreSQL with credentials
+        Regex::new(r"(?i)(?:\b(?:server|host|data source)\s*=[^;\s]+.*\b(?:pwd|password)\s*=[^;\s]+|\b(?:pwd|password)\s*=[^;\s]+.*\b(?:server|host|data source)\s*=[^;\s]+)").unwrap(),
+        // database connection URI with credentials in query parameters
+        Regex::new(r"(?i)\b(?:mysql|postgres(?:ql)?)(?:\+[a-z0-9]+)?://[^\s?]+\?[^\s]*(?:pwd|password)=[^&\s]+").unwrap(),
+        // JDBC connection string with credentials in query parameters
+        Regex::new(r"(?i)\bjdbc:[a-z]+://[^\s?]+\?[^\s]*(?:pwd|password)=[^&\s]+").unwrap(),
         // env vars
         Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
         Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
@@ -316,9 +365,22 @@ mod tests {
         ));
         assert!(!rm_line("cat -----BEGIN CERTIFICATE-----"));
         assert!(!rm_line("cat -----BEGIN PUBLIC KEY-----"));
+        assert!(!rm_line("cat -----BEGIN PGP PUBLIC KEY BLOCK-----"));
+        assert!(!rm_line("mongodb://localhost:27017/mydb"));
+        assert!(!rm_line("mongodb+srv://cluster0.mongodb.net/mydb"));
+        assert!(!rm_line("mysql://localhost:3306/mydb"));
+        assert!(!rm_line("jdbc:mysql://localhost:3306/mydb"));
+        assert!(!rm_line("jdbc:mysql://localhost:3306/mydb?useSSL=false"));
+        assert!(!rm_line("postgres://localhost:5432/mydb"));
+        assert!(!rm_line("postgresql://localhost:5432/mydb"));
+        assert!(!rm_line("Server=localhost;Database=mydb;Uid=user;"));
         assert!(!rm_line("pip install pypi-metadata-exporter"));
         assert!(!rm_line("AKIA123"));
         assert!(!rm_line("sk-ant-not-a-real-key"));
+        assert!(!rm_line("hf_short"));
+        assert!(!rm_line("gsk_short"));
+        assert!(!rm_line("sk-or-not-a-key"));
+        assert!(!rm_line("export OPENAI_API_KEY"));
 
         // match
         assert!(rm_line("AKIAIOSFODNN7EXAMPLE"));
@@ -329,7 +391,39 @@ mod tests {
             "sk-abcdefghij0123456789T3BlbkFJabcdefghij0123456789"
         ));
         assert!(rm_line("sk-proj-abcdefghijklmnop"));
+        assert!(rm_line("sk-svcacct-abcdefghijklmnop"));
+        assert!(rm_line("sk-admin-abcdefghijklmnop"));
         assert!(rm_line("sk-ant-api03-abcdefghijklmnop"));
+        assert!(rm_line("sk-ant-admin01-abcdefghijklmnop"));
+        assert!(rm_line("hf_abcdefghijklmnopqrstuvwxyzabcdefgh"));
+        assert!(rm_line("api_org_abcdefghijklmnopqrstuvwxyzabcdefgh"));
+        assert!(rm_line(
+            "gsk_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl"
+        ));
+        assert!(rm_line("r8_abcdefghijklmnopqrstuvwxyz0123456789abcd"));
+        assert!(rm_line(
+            "pplx-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl"
+        ));
+        assert!(rm_line(
+            "xai-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefgh"
+        ));
+        assert!(rm_line(
+            "sk-or-v1-abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+        ));
+        assert!(rm_line("sk-abcdef0123456789abcdef0123456789"));
+        assert!(rm_line("mistral-abcdefghijklmnopqrst"));
+        assert!(rm_line("fw_abcdefghijklmnopqrstuvwxyz012345"));
+        assert!(rm_line("jina_abcdefghijklmnopqrstuvwx"));
+        assert!(rm_line("pa-abcdefghijklmnopqrstuvwxyz0123456789abcd"));
+        assert!(rm_line("pcsk_abcdefghijklmnopqrstuvwxyz0123456789"));
+        assert!(rm_line("nvapi-abcdefghijklmnopqrstuvwxyz0123456789abcd"));
+        assert!(rm_line("lsv2_pt_abcdefghijklmnopqrstuvwx"));
+        assert!(rm_line("csk-abcdefghijklmnopqrstuvwxyz0123456789abcd"));
+        assert!(rm_line("sk_abcdefghijklmnopqrstuvwxyz012345"));
+        assert!(rm_line(
+            "ABSKABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx"
+        ));
+        assert!(rm_line("bedrock-api-key-YmVkcm9jay5hbWF6b25hd3MuY29t"));
         assert!(rm_line("github_pat_abcdefghijklmnopqrstuv"));
         assert!(rm_line("npm_abcdefghijklmnopqrstuvwxyz0123456789"));
         assert!(rm_line(
@@ -341,8 +435,50 @@ mod tests {
         ));
         assert!(rm_line("echo \"-----BEGIN OPENSSH PRIVATE KEY-----\""));
         assert!(rm_line("cat <<'EOF' -----BEGIN RSA PRIVATE KEY----- EOF"));
+        assert!(rm_line("cat -----BEGIN DSA PRIVATE KEY-----"));
+        assert!(rm_line("cat -----BEGIN EC PRIVATE KEY-----"));
+        assert!(rm_line("cat -----BEGIN PRIVATE KEY-----"));
+        assert!(rm_line("cat -----BEGIN ENCRYPTED PRIVATE KEY-----"));
+        assert!(rm_line("cat -----BEGIN PGP PRIVATE KEY BLOCK-----"));
         assert!(rm_line(
             "DefaultEndpointsProtocol=https;AccountName=x;AccountKey=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOP==;EndpointSuffix=core.windows.net"
+        ));
+        assert!(rm_line(
+            "mongosh \"mongodb://user:password@localhost:27017/mydb?authSource=admin\""
+        ));
+        assert!(rm_line("mongodb://user:password@localhost:27017/mydb"));
+        assert!(rm_line(
+            "mongodb+srv://user:password@cluster0.mongodb.net/mydb"
+        ));
+        assert!(rm_line("mysql://user:password@localhost:3306/mydb"));
+        assert!(rm_line("mysql://root:p%40ss@127.0.0.1:3306/mydb"));
+        assert!(rm_line("mysql+pymysql://user:password@localhost:3306/mydb"));
+        assert!(rm_line("jdbc:mysql://user:password@localhost:3306/mydb"));
+        assert!(rm_line(
+            "jdbc:mysql://localhost:3306/mydb?user=root&password=secret"
+        ));
+        assert!(rm_line(
+            "mysql://localhost:3306/mydb?user=root&password=secret"
+        ));
+        assert!(rm_line("postgres://user:password@localhost:5432/mydb"));
+        assert!(rm_line("postgresql://user:password@localhost:5432/mydb"));
+        assert!(rm_line(
+            "postgresql+psycopg2://user:password@localhost:5432/mydb"
+        ));
+        assert!(rm_line(
+            "jdbc:postgresql://user:password@localhost:5432/mydb"
+        ));
+        assert!(rm_line(
+            "Server=localhost;Database=mydb;Uid=user;Pwd=secret;"
+        ));
+        assert!(rm_line(
+            "Password=secret;Data Source=localhost;Database=mydb;"
+        ));
+        assert!(rm_line(
+            "Host=localhost;Database=mydb;Username=user;Password=secret;"
+        ));
+        assert!(rm_line(
+            "host=localhost port=5432 dbname=mydb user=foo password=secret"
         ));
     }
 }

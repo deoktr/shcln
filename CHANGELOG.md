@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-08
+
 ### Added
 
 - Add new patterns
