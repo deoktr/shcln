@@ -105,7 +105,7 @@ shcln
 
 Removed entries are counted, not printed, so a run scheduled by systemd or cron
 does not copy the secrets it removes into the journal. Pass `--print-removed`
-when running interactively to see the matched text.
+when running interactively to see the matched text and the rule that matched it.
 
 A history file with nothing to remove is left untouched: it is not rewritten and
 its modification time does not change.

@@ -1,484 +1,416 @@
-use std::sync::LazyLock;
+use std::sync::{LazyLock, OnceLock};
 
-use regex::Regex;
+use regex::bytes::{Regex, RegexBuilder};
 
-static MATCH_LIST: LazyLock<[Regex; 176]> = LazyLock::new(|| {
-    [
-        // targeted matches
-        Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.*-S"#).unwrap(),
-        Regex::new(r#"echo (?:-e)?*["']?(.*)["']? *\| *sudo.* passwd .*"#).unwrap(),
-        Regex::new(r#"sudo.*-S.*<<< *(.*)"#).unwrap(),
-        Regex::new(r#"docker.*--password-stdin"#).unwrap(),
-        Regex::new(r"(?i)(?:aws_access_key_id|aws_secret_access_key)=([0-9a-zA-Z/+]{20,40})").unwrap(),
-        Regex::new(r#"(?i:authorization):(?:.*)(?i:basic).(.*)("|'|\x60|\$\()"#).unwrap(),
-        Regex::new(r"curl.*(?:-u|--user)(?:[ =])([^ ]*)").unwrap(),
-        Regex::new(r"ghp_[0-9a-zA-Z]{36}").unwrap(),
-        Regex::new(r"gho_[0-9a-zA-Z]{36}").unwrap(),
-        Regex::new(r"(ghu|ghs)_[0-9a-zA-Z]{36}").unwrap(),
-        Regex::new(r"\b(github_pat_[0-9a-zA-Z_]{22,})\b").unwrap(),
-        Regex::new(r"ghr_[0-9a-zA-Z]{36}").unwrap(),
-        Regex::new(r"glpat-[0-9a-zA-Z-_]{20}").unwrap(),
-        Regex::new(r#"(?i)(?:heroku)(?:[0-9a-z\-_\t .]{0,20})(?:[\s|']|[\s|"]){0,3}(?:=|>|:=|\|\|:|<=|=>|:)(?:'|"|\s|=|\x60){0,5}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
-        // MailGun API Key
-        Regex::new(r#""key-[0-9a-zA-Z]{32}""#).unwrap(),
-        Regex::new(r"(?i)[0-9a-f]{32}-us[0-9]{1,2}").unwrap(),
-        Regex::new(r"(SG.[0-9A-Za-z\-_]{15,30}\.[0-9A-Za-z\-_]{15,30})").unwrap(),
-        Regex::new(r"(SG\.[0-9A-Za-z\-_]{22}\.[0-9A-Za-z\-_]{43})").unwrap(),
-        Regex::new(r"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-zA-Z0-9]{30,32})").unwrap(),
-        Regex::new(r"https://hooks.slack.com/services/([A-Za-z0-9+/]{44,46})").unwrap(),
-        Regex::new(r"(SK[0-9a-fA-F]{32})").unwrap(),
-        // AWS access key id (AKIA/ASIA/...), also catches temporary keys
-        Regex::new(r"\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[0-9A-Z]{16})\b").unwrap(),
-        // Stripe secret, publishable and restricted keys
-        Regex::new(r"\b((?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{16,})\b").unwrap(),
-        // OpenAI API key (legacy)
-        Regex::new(r"\b(sk-[0-9a-zA-Z]{20}T3BlbkFJ[0-9a-zA-Z]{20})\b").unwrap(),
-        // OpenAI API key (project / service account / admin scoped)
-        Regex::new(r"\b(sk-(?:proj|svcacct|admin)-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
-        // Anthropic API key
-        Regex::new(r"\b(sk-ant-(?:api|sid|admin)[0-9]{2}-[0-9a-zA-Z\-_]{16,})\b").unwrap(),
-        Regex::new(r"\b(npm_[0-9a-zA-Z]{36})\b").unwrap(),
-        Regex::new(r"\b(pypi-[0-9a-zA-Z\-_]{50,})\b").unwrap(),
-        // HashiCorp Vault token
-        Regex::new(r"\b(hv[bsp]\.[0-9a-zA-Z\-_]{20,})\b").unwrap(),
-        // FIXME: wrongly detect ssh
-        // Regex::new(r"(([A-Za-z]*:(?://)?)([-;:&=\+\$,\w]+)@[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:/[\+~%/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?").unwrap(),
-        Regex::new(r#"(?i)\b(AIza[0-9A-Za-z\\-_]{35})(?:['|"|\n|\r|\s|\x60]|$)"#).unwrap(),
-        // Hugging Face access token and organization token
-        Regex::new(r"\b(hf_[a-z]{34})\b").unwrap(),
-        Regex::new(r"\b(api_org_[a-z]{34})\b").unwrap(),
-        // Groq
-        Regex::new(r"\b(gsk_[0-9a-zA-Z]{48})\b").unwrap(),
-        // Replicate
-        Regex::new(r"\b(r8_[0-9a-zA-Z]{40})\b").unwrap(),
-        // Perplexity
-        Regex::new(r"\b(pplx-[0-9a-zA-Z]{48})\b").unwrap(),
-        // xAI / Grok
-        Regex::new(r"\b(xai-[0-9a-zA-Z]{40,})\b").unwrap(),
-        // OpenRouter
-        Regex::new(r"\b(sk-or-v1-[0-9a-zA-Z]{40,})\b").unwrap(),
-        // DeepSeek (bare sk- prefix followed by hex)
-        Regex::new(r"\b(sk-[0-9a-f]{32,})\b").unwrap(),
-        // Mistral
-        Regex::new(r"(?i)\b(mistral-[0-9a-zA-Z]{16,})\b").unwrap(),
-        // Fireworks AI
-        Regex::new(r"\b(fw_[0-9a-zA-Z]{30,})\b").unwrap(),
-        // Jina AI
-        Regex::new(r"\b(jina_[0-9a-zA-Z]{20,})\b").unwrap(),
-        // Voyage AI
-        Regex::new(r"\b(pa-[0-9a-zA-Z]{32,})\b").unwrap(),
-        // Pinecone
-        Regex::new(r"\b(pcsk_[0-9a-zA-Z]{30,})\b").unwrap(),
-        // NVIDIA NGC (build.nvidia.com)
-        Regex::new(r"\b(nvapi-[0-9a-zA-Z]{30,})\b").unwrap(),
-        // LangSmith (LangChain)
-        Regex::new(r"\b(lsv2_[0-9a-zA-Z_-]{20,})\b").unwrap(),
-        // Cerebras
-        Regex::new(r"\b(csk-[0-9a-zA-Z]{30,})\b").unwrap(),
-        // ElevenLabs
-        Regex::new(r"\b(sk_[0-9a-zA-Z]{24,})\b").unwrap(),
-        // Amazon Bedrock (long-lived and short-lived API keys)
-        Regex::new(r"\b(ABSK[A-Za-z0-9+/=]{40,})\b").unwrap(),
-        Regex::new(r"bedrock-api-key-YmVkcm9jay5hbWF6b25hd3MuY29t").unwrap(),
-        Regex::new(r"https://outlook.office.com/webhook/([0-9a-f-]{36})/@").unwrap(),
-        Regex::new(r"oy2[a-z0-9]{43}").unwrap(),
-        Regex::new(r#"(?i)twitter(.{0,20})?[''"]([0-9a-z]{35,44})[''"]"#).unwrap(),
-        Regex::new(r#"(?i)twitter(.{0,20})?[''"]([0-9a-z]{18,25})[''"]"#).unwrap(),
-        Regex::new(r"wget(?:.*)--(?:ftp-|http-)?(?:password|user)[ =]([^ ]*)").unwrap(),
-        Regex::new(r#"(?i)linkedin(.{0,20})?(?-i)[''"]([0-9a-zA-Z]{12,16})[''"]"#).unwrap(),
-        Regex::new(r"(EAACEdEose0cBA[0-9A-Za-z]+)").unwrap(),
-        Regex::new(r#"(?i)(?:datadog)(?:[0-9a-z\-_\t .]{0,20})(?:\[s|']|[\s|"]){0,3}(?:=|>|:=|\|\|:|<=|=>|:)(?:'|"|\s|=|\x60){0,5}([a-z0-9]{40})(?:['|"|\n|\r|\s|\x60|;]|$)"#).unwrap(),
-        Regex::new(r"diskutil.*passphrase ([[:alpha:][:punct:]]{1,200}).*").unwrap(),
-        // Discord webhook url
-        Regex::new(r"(discord(?:app)?\.com/api/webhooks/[0-9]{17,}/[0-9A-Za-z_-]+)").unwrap(),
-        // private key pasted inline: OpenSSH native, PEM (RSA/DSA/EC),
-        // PKCS#8, encrypted, and PGP armored private key blocks
-        Regex::new(r"(?i)(-----BEGIN[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----)").unwrap(),
-        // Azure storage account connection string key
-        Regex::new(r"(AccountKey=[A-Za-z0-9+/]{40,}={0,2})").unwrap(),
-        // MongoDB connection string with credentials
-        Regex::new(r#"(?i)\bmongodb(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+"#).unwrap(),
-        // MySQL connection string with credentials (also matches JDBC and SQLAlchemy URIs)
-        Regex::new(r#"(?i)\bmysql(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+"#).unwrap(),
-        // PostgreSQL connection string with credentials (also matches JDBC and SQLAlchemy URIs)
-        Regex::new(r#"(?i)\bpostgres(?:ql)?(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+"#).unwrap(),
-        // key/value connection strings for MySQL and PostgreSQL with credentials
-        Regex::new(r"(?i)(?:\b(?:server|host|data source)\s*=[^;\s]+.*\b(?:pwd|password)\s*=[^;\s]+|\b(?:pwd|password)\s*=[^;\s]+.*\b(?:server|host|data source)\s*=[^;\s]+)").unwrap(),
-        // database connection URI with credentials in query parameters
-        Regex::new(r"(?i)\b(?:mysql|postgres(?:ql)?)(?:\+[a-z0-9]+)?://[^\s?]+\?[^\s]*(?:pwd|password)=[^&\s]+").unwrap(),
-        // JDBC connection string with credentials in query parameters
-        Regex::new(r"(?i)\bjdbc:[a-z]+://[^\s?]+\?[^\s]*(?:pwd|password)=[^&\s]+").unwrap(),
-        // env vars
-        Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GITHUB_TOKEN=["']?([0-9a-zA-Z*_/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GITLAB_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"HEROKU_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"VAULT_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CONSUL_HTTP_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"VERCEL_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CLOUDFLARE_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"NEWRELIC_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"README_API_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?"#).unwrap(),
-        Regex::new(r#"CARGO_REGISTRY_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AMAZON_AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AMAZON_AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"ALGOLIA_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AZURE_CLIENT_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AZURE_CLIENT_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AZURE_USERNAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"AZURE_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"MSI_ENDPOINT=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"MSI_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"binance_api=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"binance_secret=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"BITTREX_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"BITTREX_API_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CF_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CF_USERNAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CODECLIMATE_REPO_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"COVERALLS_REPO_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CIRCLE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"DIGITALOCEAN_ACCESS_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"DOCKER_EMAIL=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"DOCKER_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"DOCKER_USERNAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"DOCKERHUB_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"ITC_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"FACEBOOK_APP_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"FACEBOOK_APP_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"FACEBOOK_ACCESS_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"FIREBASE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"FIREBASE_API_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"FOSSA_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GITHUB_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GH_ENTERPRISE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GITHUB_ENTERPRISE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_DEPLOY_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_DEPLOY_USER=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GOOGLE_APPLICATION_CREDENTIALS=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GOOGLE_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_DEPLOY_USER=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_DEPLOY_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"GITLAB_USER_LOGIN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_JOB_JWT=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_JOB_JWT_V2=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CI_JOB_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"HEROKU_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"HEROKU_API_USER=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"MAILGUN_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"MCLI_PRIVATE_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"MCLI_PUBLIC_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"NGROK_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"NGROK_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"NPM_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"NPM_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OKTA_CLIENT_ORGURL=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OKTA_CLIENT_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OKTA_OAUTH2_CLIENTSECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OKTA_OAUTH2_CLIENTID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OKTA_AUTHN_GROUPID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OS_USERNAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"OS_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"PERCY_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"POSTGRES_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"SAUCE_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"SAUCE_USERNAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"SENTRY_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"SLACK_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"square_access_token=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"square_oauth_secret=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"STRIPE_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"STRIPE_DEVICE_NAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"SURGE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"SURGE_LOGIN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"TWILIO_ACCOUNT_SID=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"TWILIO_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CONSUMER_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"CONSUMER_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"TRAVIS_SUDO=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"TRAVIS_OS_NAME=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"TRAVIS_SECURE_ENV_VARS=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"TELEGRAM_BOT_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"VAULT_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"VAULT_CLIENT_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"VULTR_ACCESS=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        Regex::new(r#"VULTR_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?"#).unwrap(),
-        // non-targeted matches
-        Regex::new(r" --?[0-9a-zA-Z_-]*pass(?:word)? *=?([^ ]+)").unwrap(),
-        Regex::new(r" --?[0-9a-zA-Z_-]*token[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
-        Regex::new(r" --?[0-9a-zA-Z_-]*auth[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
-        Regex::new(r" --?[0-9a-zA-Z_-]*key(?: +|=)([^ ]+)").unwrap(),
-        Regex::new(r" --?[0-9a-zA-Z_-]*jwt[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
-        Regex::new(r" --?[0-9a-zA-Z_-]*secret[0-9a-zA-Z_-]* *=?([^ ]+)").unwrap(),
-        Regex::new(r"echo +(.*) *>.*(?:secret|pass|key|token|jwt)").unwrap(), // secret file creation
-        // TODO: remove quotes from match group, note that rust regex doesn't
-        // support look-around, and we need a single group, also cannot name
-        // capture group
-        Regex::new(r#"KEY[0-9a-zA-Z_-]*=('[^']+'|"[^"]+"|[^ ]+)"#).unwrap(),
-        Regex::new(r#"SECRET[0-9a-zA-Z_-]*=('[^']+'|"[^"]+"|[^ ]+)"#).unwrap(),
-        Regex::new(r#"TOKEN[0-9a-zA-Z_-]*=('[^']+'|"[^"]+"|[^ ]+)"#).unwrap(),
-        Regex::new(r#"JWT[0-9a-zA-Z_-]*=('[^']+'|"[^"]+"|[^ ]+)"#).unwrap(),
-    ]
-});
+use crate::pattern_data::{
+    PATTERN_COUNT, PATTERN_IDS, PATTERN_NAMES, PATTERN_PROVIDERS, PATTERN_SOURCES,
+};
+use crate::prefilter::Prefilter;
+
+/// Human-readable metadata for a secret scanning rule.
+#[derive(Clone, Copy, Debug)]
+pub struct Pattern {
+    pub provider: &'static str,
+    pub name: &'static str,
+    pub id: &'static str,
+}
+
+/// Lazily compiled regexes. A pattern is only compiled the first time its
+/// prefilter keywords occur in a history line.
+static PATTERN_CACHE: LazyLock<Vec<OnceLock<Regex>>> =
+    LazyLock::new(|| (0..PATTERN_COUNT).map(|_| OnceLock::new()).collect());
+
+static PREFILTER: LazyLock<Prefilter> = LazyLock::new(Prefilter::new);
+
+/// Compile a pattern. Some rules combine several large expressions, so raise
+/// the compiled size limit above the regex crate's deliberately conservative
+/// default.
+fn rx(pattern: &str) -> Regex {
+    RegexBuilder::new(pattern)
+        .unicode(false)
+        .size_limit(64 * 1024 * 1024)
+        .build()
+        .unwrap()
+}
+
+/// Return the first pattern that matches the line, if any.
+pub fn match_line(line: &str) -> Option<Pattern> {
+    let matched = PREFILTER.find_match(line.as_bytes(), |idx| {
+        let cell = &PATTERN_CACHE[idx];
+        let re = cell.get_or_init(|| rx(PATTERN_SOURCES[idx]));
+        re.is_match(line.as_bytes())
+    })?;
+    Some(Pattern {
+        provider: PATTERN_PROVIDERS[matched],
+        name: PATTERN_NAMES[matched],
+        id: PATTERN_IDS[matched],
+    })
+}
 
 /// Whether or not to remove the line from the history file.
+#[allow(dead_code)]
 pub fn rm_line(line: &str) -> bool {
-    for re in MATCH_LIST.iter() {
-        if re.is_match(line) {
-            // debug logs
-            // println!("matched: {}\nwith: {}", line, re);
+    match_line(line).is_some()
+}
 
-            // TODO: hash the secret before logging
-            // get the secret value
-            // let caps = re.captures(line).unwrap();
-            // let secret = caps.get(1).unwrap();
-            // println!("secret: {}", secret.as_str());
-
-            return true;
-        }
-    }
-    false
+#[cfg(test)]
+fn compiled_patterns() -> &'static [Regex] {
+    static COMPILED: LazyLock<Vec<Regex>> =
+        LazyLock::new(|| PATTERN_SOURCES.iter().map(|s| rx(s)).collect());
+    &COMPILED
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_rm_line_match_aws() {
-        // no match
-        assert!(!rm_line("export RAND_VAR=foobar123"));
-        assert!(!rm_line("RAND_VAR=foobar123 aws foo bar"));
-        assert!(!rm_line("RAND_VAR='foobar123' aws foo bar"));
-        assert!(!rm_line("RAND_VAR=\"foobar123\" aws foo bar"));
-        assert!(!rm_line("RAND_VAR=foobar123"));
-        assert!(!rm_line("RAND_VAR='foobar123'"));
-        assert!(!rm_line("RAND_VAR=\"foobar123\""));
-
-        // match
-        assert!(rm_line("export AWS_ACCESS_KEY_ID=foobar123"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=foobar123 aws foo bar"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID='foobar123' aws foo bar"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=\"foobar123\" aws foo bar"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=foobar123"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID='foobar123'"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=\"foobar123\""));
+    fn matches(line: &str) -> bool {
+        compiled_patterns()
+            .iter()
+            .any(|re| re.is_match(line.as_bytes()))
     }
 
     #[test]
-    fn test_rm_line_match_basic() {
-        // no match
-        assert!(!rm_line(""));
-        assert!(!rm_line("abc"));
-        assert!(!rm_line("123"));
-        assert!(!rm_line("cmd -with 2 --flags 'abc' --var $USER"));
-        assert!(!rm_line("export RAND_VAR=foobar123"));
-        assert!(!rm_line("RAND_VAR=foobar123 aws foo bar"));
-        assert!(!rm_line("RAND_VAR=foobar123"));
-        assert!(!rm_line("RAND_VAR='foobar123'"));
-        assert!(!rm_line("RAND_VAR=\"foobar123\""));
-
-        // match
-        assert!(rm_line("export AWS_ACCESS_KEY_ID=foobar123"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=foobar123 aws foo bar"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=foobar123"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID='foobar123'"));
-        assert!(rm_line("AWS_ACCESS_KEY_ID=\"foobar123\""));
+    fn all_patterns_compile() {
+        assert_eq!(PATTERN_COUNT, PATTERN_SOURCES.len());
+        assert_eq!(compiled_patterns().len(), PATTERN_COUNT);
     }
 
     #[test]
-    fn test_rm_line_sudo() {
-        // no match
-        assert!(!rm_line("echo 'foo' | sudo xargs echo"));
-        assert!(!rm_line("sudo passwd root"));
-        assert!(!rm_line("sudo passwd john"));
-
-        // match
-        assert!(rm_line("echo abcdefg123! | sudo -S foo"));
-        assert!(rm_line("echo   abcdefg123!   |   sudo  -S   foo  --help"));
-        assert!(rm_line("echo 'abcdefg123!' | sudo -S foo"));
-        assert!(rm_line("echo 'abcdefg123 !' | sudo -S foo"));
-        assert!(rm_line("echo \"abcdefg123!\" | sudo -S foo"));
-        assert!(rm_line("sudo -S <<< password command"));
-        assert!(rm_line("sudo  -S  <<<  password  command"));
-        assert!(rm_line("sudo -S <<< 'password' foo"));
-        assert!(rm_line("sudo -S <<< 'password bar' foo"));
-        assert!(rm_line("sudo -S <<< \"password\" foo"));
-        assert!(rm_line("echo -e 'foo\\nfoo\\n' | sudo passwd root"));
+    fn match_line_returns_pattern_metadata() {
+        let token = format!("ops_eyJ{}", "a".repeat(260));
+        let pattern = match_line(&token).expect("token should match a pattern");
+        assert_eq!(pattern.provider, "1Password");
+        assert_eq!(pattern.name, "1Password Service Account Token");
+        assert_eq!(pattern.id, "1password_service_account_token");
+        assert!(match_line("ls -la").is_none());
     }
 
     #[test]
-    fn test_rm_line() {
-        // no match
-        assert!(!rm_line("ls -alhF --group-directories-first /tmp"));
-        assert!(!rm_line("mkdir -p /tmp/foo/bar/baz"));
-        assert!(!rm_line("cmd -p"));
-        assert!(!rm_line("ssh-keyscan"));
-        assert!(!rm_line("ssh-keygen"));
-        assert!(!rm_line("ssh-keygen -f server.key"));
-        assert!(!rm_line("sudo cryptsetup luksAddKey /dev/sda1 /tmp/foo"));
-        assert!(!rm_line(
-            "sudo cryptsetup open /dev/sda1 --key-file /tmp/foo"
-        ));
-        assert!(!rm_line("sudo chmod 400 /tmp/foo.key"));
-        assert!(!rm_line("git commit -m \"key\""));
-        assert!(!rm_line("cat yubikey.rules"));
-        assert!(!rm_line("cat /etc/passwd"));
-        assert!(!rm_line("echo $SECRET_TOKEN_KEY"));
-        assert!(!rm_line("aws sso login --profile my-profile"));
-        assert!(!rm_line("grep password foo.txt"));
-        assert!(!rm_line("mkpasswd"));
-        assert!(!rm_line("ssh foo@10.0.0.1"));
-        assert!(!rm_line("ssh foo@localhost"));
-        assert!(!rm_line("ssh user@localhost"));
+    fn representative_secrets_match() {
+        let samples = [
+            "AKIAIOSFODNN7EXAMPLE",
+            "ASIAIOSFODNN7EXAMPLE",
+            "ghp_abcdefghijklmnopqrstuvwxyz0123456789",
+            "gho_abcdefghijklmnopqrstuvwxyz0123456789",
+            "ghu_abcdefghijklmnopqrstuvwxyz0123456789",
+            "ghs_abcdefghijklmnopqrstuvwxyz0123456789",
+            "ghr_abcdefghijklmnopqrstuvwxyz0123456789",
+            "github_pat_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuv",
+            "glpat-abcdefghijklmnopqrst",
+            "glpat-abcdefghijklmnopqrstuvwxyz0.12abcdefg",
+            "xoxb-123456789012-123456789012-abcdefghijklmnopqrstuvwx",
+            "sk_live_1234567890abcdefghijklmn",
+            "rk_live_1234567890abcdefghijklmn",
+            "sk-proj-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz01234567T3BlbkFJabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz01234567",
+            "sk-ant-api03-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789AA",
+            "hf_abcdefghijklmnopqrstuvwxyzabcdefgh",
+            "api_org_abcdefghijklmnopqrstuvwxyzabcdefgh",
+            "gsk_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnop",
+            "r8_abcdefghijklmnopqrstuvwxyz0123456789a",
+            "pplx-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl",
+            "xai-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmn",
+            "sk-or-v1-abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "npm_abcdefghijklmnopqrstuvwxyz0123456789",
+            "pypi-AgEIcHlwaS5vcmcCJabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+            "hvs.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+            "ops_eyJabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+            "aio_abcdefghijklmnopqrstuvwxyz12",
+            "p8e-abcdefghijklmnopqrstuvwxyz012345",
+            "patabcdefghijklmn.abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "LTAIabcdefghijklmnopqrst",
+            "ATBBabcdefghijklmnopqrstuvwx",
+            "bkua_abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "CCIPAT_abcdefghijklmnopqrstuv_abcdef0123456789abcdef0123456789abcdef01",
+            "CLOJARS_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz01",
+            "cfut_abcdefghijklmnopqrstuvwxyz0123456789abcd01234567",
+            "cfk_abcdefghijklmnopqrstuvwxyz0123456789abcd01234567",
+            "CFPAT-abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "dapiabcdef0123456789abcdef0123456789",
+            "dop_v1_abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "dp.pt.abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "duffel_live_abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "dt0c01.abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz01234567",
+            "EZAKabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqr",
+            "EZTKabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqr",
+            "EAAabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefgh",
+            "figp_abcdefghijklmnopqrstuvwxyz0123456789abcdef",
+            "FLWSECK-abcdefghijklmnopqrstuvwxyz012345-X",
+            "fio-u-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghij",
+            "na1.abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+/abcdefghijklmnop",
+            "HRKU-AAabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuv",
+            "pat-na1-abcdefgh-1234-5678-9012-abcdefghijkl",
+            "AKCpabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklm",
+            "cmVmdabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvw",
+            "lin_api_abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "live_abcdef0123456789abcdef0123456789abc",
+            "MAILGUN_API_KEY=key-abcdef0123456789abcdef0123456789",
+            "sk.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+            "abcdef_abcdefghijklmnopqrstuvwxyz012_mmk",
+            "MERAKI_API_KEY=abcdef0123456789abcdef0123456789abcdef01",
+            "MESSAGEBIRD_API_KEY=abcdefghijklmnopqrstuvwxy",
+            "NRAK-abcdefghijklmnopqrstuvwxyz0",
+            "NRIQ-abcdefghijklmnopqrstuvwxy",
+            "ntn_12345678901abcdefghijklmnopqrstuvwxyz012345678",
+            "secret_abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "oy2abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "API-ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "pnu_abcdefghijklmnopqrstuvwxyz0123456789",
+            "pul-abcdef0123456789abcdef0123456789abcdef01",
+            "rdme_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl",
+            "shpat_abcdef0123456789abcdef0123456789",
+            "shpca_abcdef0123456789abcdef0123456789",
+            "shppa_abcdef0123456789abcdef0123456789",
+            "shpss_abcdef0123456789abcdef0123456789",
+            "SG.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123",
+            "sntryu_abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "shippo_live_abcdef0123456789abcdef0123456789abcdef01",
+            "xapp-1-A0123456789-1234567890-abcdefghijklmnopqrstuvwxyz0123456789",
+            "https://hooks.slack.com/services/T00000000/B00000000/abcdefghijklmnopqrstuvwx",
+            "ACabcdef0123456789abcdef0123456789",
+            "SKabcdef0123456789abcdef0123456789",
+            "tfp_abcdefghijklmnopqrstuvwxyz0123456789abcdefgh",
+            "wandb_v1_abcdefghijklmnopqrstuvwxyz0_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklm",
+            "tskey-api-abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz",
+            "123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi",
+            "abc1Q~abcdefghijklmnopqrstuvwxyz012345",
+            "AccountKey=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx==",
+            "Endpoint=https://example.azconfig.io;Id=abc;Secret=abcdefghijklmnopqrstuvwxyz0123456789",
+            "HostName=example.azure-devices.net;DeviceId=device;SharedAccessKey=abcdefghijklmnopqrstuvwxyz0123456789",
+            "mongodb://user:password@localhost:27017/mydb",
+            "postgres://user:password@localhost:5432/mydb",
+            "-----BEGIN RSA PRIVATE KEY-----",
+            "sbp_abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "sb_secret_abcdefghijklmnopqrstuvwxyz",
+            "glc_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+            "glsa_abcdefghijklmnopqrstuvwxyz012345_abcdef01",
+            "pcsk_abcde_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0",
+            "pscale_tkn_abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "pscale_oauth_abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "pscale_pw_abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "PMAK-abcdef0123456789abcdef01-abcdef0123456789abcdef0123456789ab",
+            "re_abcdefgh_abcdefghijkmnopqrstuvwxy",
+            "rootly_abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "rubygems_abcdef0123456789abcdef0123456789abcdef0123456789",
+            "sgp_abcdef0123456789abcdef0123456789abcdef01",
+            "sq0atp-abcdefghijklmnopqrstuv",
+            "AQVNabcdefghijklmnopqrstuvwxyz012345678",
+            "VERCEL_TOKEN=abcdefghijklmnopqrstuvwxyz012345",
+            "WORKOS_API_KEY=sk_abcdefghijklmnopqrstuvwxyz012345",
+        ];
 
-        // match
-        assert!(rm_line("export SECRET=abc"));
-        // assert!(rm_line("cmd -p 'abc'"));
-        assert!(rm_line("cmd --password 'abcdefg123!'"));
-        assert!(rm_line("cmd --auth-token 'abcdefg123!'"));
-        assert!(rm_line("echo 'abcdefg123!' | xargs myprogram -pass --"));
-        assert!(rm_line("echo 'abcdefg123!' > pass"));
-        assert!(rm_line("prog --password 'foo' && ssh-keyscan"));
-        assert!(rm_line("ykman --scp-password abc"));
-        assert!(rm_line(
-            "echo \"foobar\" | docker login example.com -u user --password-stdin"
-        ));
-        assert!(rm_line("curl -u 'admin:foobar123!' http://example.com/"));
-        assert!(rm_line(
-            "curl -H \"Authorization: Basic foobar123\" http://example.com/"
-        ));
+        let missing: Vec<_> = samples
+            .iter()
+            .copied()
+            .filter(|sample| !matches(sample))
+            .collect();
+        assert!(
+            missing.is_empty(),
+            "no pattern matched samples: {missing:#?}"
+        );
     }
 
     #[test]
-    fn test_rm_line_specific_credentials() {
-        // no match
-        assert!(!rm_line("ssh://git@github.com"));
-        assert!(!rm_line("git clone https://github.com/user/repo"));
-        assert!(!rm_line("curl https://example.com:8080/path"));
-        assert!(!rm_line(
-            "curl -H \"Content-Type: application/json\" https://example.com"
-        ));
-        assert!(!rm_line("cat -----BEGIN CERTIFICATE-----"));
-        assert!(!rm_line("cat -----BEGIN PUBLIC KEY-----"));
-        assert!(!rm_line("cat -----BEGIN PGP PUBLIC KEY BLOCK-----"));
-        assert!(!rm_line("mongodb://localhost:27017/mydb"));
-        assert!(!rm_line("mongodb+srv://cluster0.mongodb.net/mydb"));
-        assert!(!rm_line("mysql://localhost:3306/mydb"));
-        assert!(!rm_line("jdbc:mysql://localhost:3306/mydb"));
-        assert!(!rm_line("jdbc:mysql://localhost:3306/mydb?useSSL=false"));
-        assert!(!rm_line("postgres://localhost:5432/mydb"));
-        assert!(!rm_line("postgresql://localhost:5432/mydb"));
-        assert!(!rm_line("Server=localhost;Database=mydb;Uid=user;"));
-        assert!(!rm_line("pip install pypi-metadata-exporter"));
-        assert!(!rm_line("AKIA123"));
-        assert!(!rm_line("sk-ant-not-a-real-key"));
-        assert!(!rm_line("hf_short"));
-        assert!(!rm_line("gsk_short"));
-        assert!(!rm_line("sk-or-not-a-key"));
-        assert!(!rm_line("export OPENAI_API_KEY"));
+    fn prefilter_never_skips_a_matching_pattern() {
+        assert_eq!(PREFILTER.pattern_count(), PATTERN_SOURCES.len());
 
-        // match
-        assert!(rm_line("AKIAIOSFODNN7EXAMPLE"));
-        assert!(rm_line("aws sts get-session-token ASIAIOSFODNN7EXAMPLE"));
-        assert!(rm_line("sk_live_1234567890abcdefghijkl"));
-        assert!(rm_line("pk_test_1234567890abcdefghijkl"));
-        assert!(rm_line(
-            "sk-abcdefghij0123456789T3BlbkFJabcdefghij0123456789"
-        ));
-        assert!(rm_line("sk-proj-abcdefghijklmnop"));
-        assert!(rm_line("sk-svcacct-abcdefghijklmnop"));
-        assert!(rm_line("sk-admin-abcdefghijklmnop"));
-        assert!(rm_line("sk-ant-api03-abcdefghijklmnop"));
-        assert!(rm_line("sk-ant-admin01-abcdefghijklmnop"));
-        assert!(rm_line("hf_abcdefghijklmnopqrstuvwxyzabcdefgh"));
-        assert!(rm_line("api_org_abcdefghijklmnopqrstuvwxyzabcdefgh"));
-        assert!(rm_line(
-            "gsk_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl"
-        ));
-        assert!(rm_line("r8_abcdefghijklmnopqrstuvwxyz0123456789abcd"));
-        assert!(rm_line(
-            "pplx-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl"
-        ));
-        assert!(rm_line(
-            "xai-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefgh"
-        ));
-        assert!(rm_line(
-            "sk-or-v1-abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-        ));
-        assert!(rm_line("sk-abcdef0123456789abcdef0123456789"));
-        assert!(rm_line("mistral-abcdefghijklmnopqrst"));
-        assert!(rm_line("fw_abcdefghijklmnopqrstuvwxyz012345"));
-        assert!(rm_line("jina_abcdefghijklmnopqrstuvwx"));
-        assert!(rm_line("pa-abcdefghijklmnopqrstuvwxyz0123456789abcd"));
-        assert!(rm_line("pcsk_abcdefghijklmnopqrstuvwxyz0123456789"));
-        assert!(rm_line("nvapi-abcdefghijklmnopqrstuvwxyz0123456789abcd"));
-        assert!(rm_line("lsv2_pt_abcdefghijklmnopqrstuvwx"));
-        assert!(rm_line("csk-abcdefghijklmnopqrstuvwxyz0123456789abcd"));
-        assert!(rm_line("sk_abcdefghijklmnopqrstuvwxyz012345"));
-        assert!(rm_line(
-            "ABSKABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx"
-        ));
-        assert!(rm_line("bedrock-api-key-YmVkcm9jay5hbWF6b25hd3MuY29t"));
-        assert!(rm_line("github_pat_abcdefghijklmnopqrstuv"));
-        assert!(rm_line("npm_abcdefghijklmnopqrstuvwxyz0123456789"));
-        assert!(rm_line(
-            "pypi-012345678901234567890123456789012345678901234567890123456789"
-        ));
-        assert!(rm_line("hvs.abcdefghijklmnopqrstuvwx"));
-        assert!(rm_line(
-            "curl https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnop"
-        ));
-        assert!(rm_line("echo \"-----BEGIN OPENSSH PRIVATE KEY-----\""));
-        assert!(rm_line("cat <<'EOF' -----BEGIN RSA PRIVATE KEY----- EOF"));
-        assert!(rm_line("cat -----BEGIN DSA PRIVATE KEY-----"));
-        assert!(rm_line("cat -----BEGIN EC PRIVATE KEY-----"));
-        assert!(rm_line("cat -----BEGIN PRIVATE KEY-----"));
-        assert!(rm_line("cat -----BEGIN ENCRYPTED PRIVATE KEY-----"));
-        assert!(rm_line("cat -----BEGIN PGP PRIVATE KEY BLOCK-----"));
-        assert!(rm_line(
-            "DefaultEndpointsProtocol=https;AccountName=x;AccountKey=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOP==;EndpointSuffix=core.windows.net"
-        ));
-        assert!(rm_line(
-            "mongosh \"mongodb://user:password@localhost:27017/mydb?authSource=admin\""
-        ));
-        assert!(rm_line("mongodb://user:password@localhost:27017/mydb"));
-        assert!(rm_line(
-            "mongodb+srv://user:password@cluster0.mongodb.net/mydb"
-        ));
-        assert!(rm_line("mysql://user:password@localhost:3306/mydb"));
-        assert!(rm_line("mysql://root:p%40ss@127.0.0.1:3306/mydb"));
-        assert!(rm_line("mysql+pymysql://user:password@localhost:3306/mydb"));
-        assert!(rm_line("jdbc:mysql://user:password@localhost:3306/mydb"));
-        assert!(rm_line(
-            "jdbc:mysql://localhost:3306/mydb?user=root&password=secret"
-        ));
-        assert!(rm_line(
-            "mysql://localhost:3306/mydb?user=root&password=secret"
-        ));
-        assert!(rm_line("postgres://user:password@localhost:5432/mydb"));
-        assert!(rm_line("postgresql://user:password@localhost:5432/mydb"));
-        assert!(rm_line(
-            "postgresql+psycopg2://user:password@localhost:5432/mydb"
-        ));
-        assert!(rm_line(
-            "jdbc:postgresql://user:password@localhost:5432/mydb"
-        ));
-        assert!(rm_line(
-            "Server=localhost;Database=mydb;Uid=user;Pwd=secret;"
-        ));
-        assert!(rm_line(
-            "Password=secret;Data Source=localhost;Database=mydb;"
-        ));
-        assert!(rm_line(
-            "Host=localhost;Database=mydb;Username=user;Password=secret;"
-        ));
-        assert!(rm_line(
-            "host=localhost port=5432 dbname=mydb user=foo password=secret"
-        ));
+        let samples = [
+            "ls -la",
+            "cargo build --release",
+            "export GITHUB_TOKEN=ghp_abcdefghijklmnopqrstuvwxyz0123456789",
+            "aws configure set aws_access_key_id AKIAIOSFODNN7EXAMPLE",
+            "curl -H 'Authorization: Bearer abcdefghijklmnopqrstuvwxyz' https://example.com",
+            "psql postgres://user:password@localhost:5432/db",
+            "-----BEGIN RSA PRIVATE KEY-----",
+            "xoxb-123456789012-123456789012-abcdefghijklmnopqrstuvwx",
+            "sk_live_1234567890abcdefghijklmn",
+            "hf_abcdefghijklmnopqrstuvwxyzabcdefgh",
+            "pcsk_abcde_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+            "dapiabcdef0123456789abcdef0123456789",
+            "dp.pt.abcdefghijklmnopqrstuvwxyz0123456789abcdefg",
+            "https://hooks.slack.com/services/T00000000/B00000000/abcdefghijklmnopqrstuvwx",
+            "sbp_abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "AIzaabcdefghijklmnopqrstuvwxyz0123456",
+            "npm_abcdefghijklmnopqrstuvwxyz0123456789",
+            "glpat-abcdefghijklmnopqrst",
+            "github_pat_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuv",
+        ];
+
+        for sample in samples {
+            let candidates = PREFILTER.candidate_indices(sample.as_bytes());
+            for (idx, re) in compiled_patterns().iter().enumerate() {
+                if re.is_match(sample.as_bytes()) {
+                    assert!(
+                        candidates.contains(&idx),
+                        "prefilter skipped pattern {idx} for {sample:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn rm_line_matches_expected() {
+        let lines = [
+            "export AWS_ACCESS_KEY_ID=foobar123",
+            "AWS_ACCESS_KEY_ID=foobar123 aws foo bar",
+            "AWS_ACCESS_KEY_ID='foobar123' aws foo bar",
+            "AWS_ACCESS_KEY_ID=\"foobar123\" aws foo bar",
+            "AWS_ACCESS_KEY_ID=foobar123",
+            "AWS_ACCESS_KEY_ID='foobar123'",
+            "AWS_ACCESS_KEY_ID=\"foobar123\"",
+            "echo abcdefg123! | sudo -S foo",
+            "echo   abcdefg123!   |   sudo  -S   foo  --help",
+            "echo 'abcdefg123!' | sudo -S foo",
+            "echo 'abcdefg123 !' | sudo -S foo",
+            "echo \"abcdefg123!\" | sudo -S foo",
+            "sudo -S <<< password command",
+            "sudo  -S  <<<  password  command",
+            "sudo -S <<< 'password' foo",
+            "sudo -S <<< 'password bar' foo",
+            "sudo -S <<< \"password\" foo",
+            "echo -e 'foo\\nfoo\\n' | sudo passwd root",
+            "echo \"foobar\" | docker login example.com -u user --password-stdin",
+            "curl -u 'admin:foobar123!' http://example.com/",
+            "curl -H \"Authorization: Basic foobar123\" http://example.com/",
+            "AKIAIOSFODNN7EXAMPLE",
+            "aws sts get-session-token ASIAIOSFODNN7EXAMPLE",
+            "sk_live_1234567890abcdefghijkl",
+            "sk-abcdefghij0123456789T3BlbkFJabcdefghij0123456789",
+            "hf_abcdefghijklmnopqrstuvwxyzabcdefgh",
+            "api_org_abcdefghijklmnopqrstuvwxyzabcdefgh",
+            "gsk_abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnop",
+            "r8_abcdefghijklmnopqrstuvwxyz0123456789a",
+            "pplx-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl",
+            "xai-abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefgh",
+            "sk-or-v1-abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            "sk-abcdef0123456789abcdef0123456789",
+            "mistral-abcdefghijklmnopqrst",
+            "fw_abcdefghijklmnopqrstuvwxyz012345",
+            "jina_abcdefghijklmnopqrstuvwx",
+            "pa-abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "pcsk_abcdefghijklmnopqrstuvwxyz0123456789",
+            "nvapi-abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "lsv2_pt_abcdefghijklmnopqrstuvwx",
+            "csk-abcdefghijklmnopqrstuvwxyz0123456789abcd",
+            "sk_abcdefghijklmnopqrstuvwxyz012345",
+            "ABSKaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bedrock-api-key-YmVkcm9jay5hbWF6b25hd3MuY29t",
+            "github_pat_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "npm_abcdefghijklmnopqrstuvwxyz0123456789",
+            "pypi-AgEIcHlwaS5vcmcCJaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "hvs.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "curl https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnop",
+            "echo \"-----BEGIN OPENSSH PRIVATE KEY-----\"",
+            "cat <<'EOF' -----BEGIN RSA PRIVATE KEY----- EOF",
+            "cat -----BEGIN DSA PRIVATE KEY-----",
+            "cat -----BEGIN EC PRIVATE KEY-----",
+            "cat -----BEGIN PRIVATE KEY-----",
+            "cat -----BEGIN ENCRYPTED PRIVATE KEY-----",
+            "cat -----BEGIN PGP PRIVATE KEY BLOCK-----",
+            "DefaultEndpointsProtocol=https;AccountName=x;AccountKey=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==;EndpointSuffix=core.windows.net",
+            "mongosh \"mongodb://user:password@localhost:27017/mydb?authSource=admin\"",
+            "mongodb://user:password@localhost:27017/mydb",
+            "mongodb+srv://user:password@cluster0.mongodb.net/mydb",
+            "mysql://user:password@localhost:3306/mydb",
+            "mysql://root:p%40ss@127.0.0.1:3306/mydb",
+            "mysql+pymysql://user:password@localhost:3306/mydb",
+            "jdbc:mysql://user:password@localhost:3306/mydb",
+            "jdbc:mysql://localhost:3306/mydb?user=root&password=secret",
+            "mysql://localhost:3306/mydb?user=root&password=secret",
+            "postgres://user:password@localhost:5432/mydb",
+            "postgresql://user:password@localhost:5432/mydb",
+            "postgresql+psycopg2://user:password@localhost:5432/mydb",
+            "jdbc:postgresql://user:password@localhost:5432/mydb",
+            "Server=localhost;Database=mydb;Uid=user;Pwd=secret;",
+            "Password=secret;Data Source=localhost;Database=mydb;",
+            "Host=localhost;Database=mydb;Username=user;Password=secret;",
+            "host=localhost port=5432 dbname=mydb user=foo password=secret",
+        ];
+
+        let missing: Vec<_> = lines
+            .iter()
+            .copied()
+            .filter(|line| !rm_line(line))
+            .collect();
+        assert!(
+            missing.is_empty(),
+            "expected rm_line to match: {missing:#?}"
+        );
+    }
+
+    #[test]
+    fn rm_line_rejects_unexpected() {
+        let lines = [
+            "export RAND_VAR=foobar123",
+            "RAND_VAR=foobar123 aws foo bar",
+            "RAND_VAR='foobar123' aws foo bar",
+            "RAND_VAR=\"foobar123\" aws foo bar",
+            "RAND_VAR=foobar123",
+            "RAND_VAR='foobar123'",
+            "RAND_VAR=\"foobar123\"",
+            "",
+            "abc",
+            "123",
+            "cmd -with 2 --flags 'abc' --var $USER",
+            "echo 'foo' | sudo xargs echo",
+            "sudo passwd root",
+            "sudo passwd john",
+            "ls -alhF --group-directories-first /tmp",
+            "mkdir -p /tmp/foo/bar/baz",
+            "cmd -p",
+            "ssh-keyscan",
+            "ssh-keygen",
+            "ssh-keygen -f server.key",
+            "sudo cryptsetup luksAddKey /dev/sda1 /tmp/foo",
+            "sudo cryptsetup open /dev/sda1 --key-file /tmp/foo",
+            "sudo chmod 400 /tmp/foo.key",
+            "git commit -m \"key\"",
+            "cat yubikey.rules",
+            "cat /etc/passwd",
+            "echo $SECRET_TOKEN_KEY",
+            "aws sso login --profile my-profile",
+            "grep password foo.txt",
+            "mkpasswd",
+            "ssh foo@10.0.0.1",
+            "ssh foo@localhost",
+            "ssh user@localhost",
+            "export SECRET=abc",
+            "cmd --password 'abcdefg123!'",
+            "cmd --auth-token 'abcdefg123!'",
+            "echo 'abcdefg123!' | xargs myprogram -pass --",
+            "echo 'abcdefg123!' > pass",
+            "prog --password 'foo' && ssh-keyscan",
+            "ykman --scp-password abc",
+            "ssh://git@github.com",
+            "git clone https://github.com/user/repo",
+            "curl https://example.com:8080/path",
+            "curl -H \"Content-Type: application/json\" https://example.com",
+            "cat -----BEGIN CERTIFICATE-----",
+            "cat -----BEGIN PUBLIC KEY-----",
+            "cat -----BEGIN PGP PUBLIC KEY BLOCK-----",
+            "mongodb://localhost:27017/mydb",
+            "mongodb+srv://cluster0.mongodb.net/mydb",
+            "mysql://localhost:3306/mydb",
+            "jdbc:mysql://localhost:3306/mydb",
+            "jdbc:mysql://localhost:3306/mydb?useSSL=false",
+            "postgres://localhost:5432/mydb",
+            "postgresql://localhost:5432/mydb",
+            "Server=localhost;Database=mydb;Uid=user;",
+            "pip install pypi-metadata-exporter",
+            "AKIA123",
+            "sk-ant-not-a-real-key",
+            "hf_short",
+            "gsk_short",
+            "sk-or-not-a-key",
+            "pk_test_1234567890abcdefghijkl",
+            "export OPENAI_API_KEY",
+        ];
+
+        let matched: Vec<_> = lines.iter().copied().filter(|line| rm_line(line)).collect();
+        assert!(
+            matched.is_empty(),
+            "expected rm_line not to match: {matched:#?}"
+        );
     }
 }

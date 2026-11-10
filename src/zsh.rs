@@ -4,7 +4,7 @@ use std::path::Path;
 use crate::cleaner::{clean_history, Entry};
 use crate::config::Config;
 use crate::error::ShclnError;
-use crate::patterns::rm_line;
+use crate::patterns::match_line;
 
 /// Clean a zsh history file.
 ///
@@ -104,8 +104,11 @@ fn match_entry(raw: Vec<u8>) -> Entry {
     let cmd = strip_zsh_prefix(&decoded);
     let logical = cmd.replace("\\\n", "\n");
 
-    match logical.lines().find(|line| rm_line(line)) {
-        Some(matched) => Entry::remove(raw, matched),
+    match logical
+        .lines()
+        .find_map(|line| match_line(line).map(|pattern| (line, pattern)))
+    {
+        Some((text, pattern)) => Entry::remove(raw, text, pattern),
         None => Entry::keep(raw),
     }
 }

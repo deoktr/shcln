@@ -1,6 +1,6 @@
 [package]
 name = "shcln"
-version = "0.7.1"
+version = "0.8.0"
 edition = "2021"
 authors = ["deoktr"]
 license = "MIT"
@@ -12,8 +12,12 @@ keywords = ["security", "cli"]
 categories = ["command-line-utilities"]
 
 [dependencies]
+aho-corasick = "1.1"
 clap = { version = "4.6.1", features = ["derive"] }
 regex = "1.12.3"
+
+[build-dependencies]
+regex-syntax = "0.8"
 
 [profile.release]
 opt-level = "z"

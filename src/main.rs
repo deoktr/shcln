@@ -4,7 +4,9 @@ mod cleaner;
 mod config;
 mod error;
 mod log;
+mod pattern_data;
 mod patterns;
+mod prefilter;
 mod zsh;
 
 use std::env;

@@ -6,6 +6,7 @@ use crate::bash::clean_bash_history;
 use crate::config::Config;
 use crate::error::ShclnError;
 use crate::log;
+use crate::patterns::Pattern;
 use crate::zsh::clean_zsh_history;
 
 /// One history entry as stored on disk.
@@ -14,8 +15,15 @@ pub struct Entry {
     /// Raw bytes, including the terminating newline. Written back verbatim so
     /// the shell keeps reading the exact format it wrote.
     pub raw: Vec<u8>,
-    /// The offending text when the entry must be removed.
-    pub matched: Option<String>,
+    /// Details about the match when the entry must be removed.
+    pub matched: Option<Match>,
+}
+
+/// The text and pattern that caused an entry to be removed.
+#[derive(Debug)]
+pub struct Match {
+    pub text: String,
+    pub pattern: Pattern,
 }
 
 impl Entry {
@@ -23,10 +31,13 @@ impl Entry {
         Self { raw, matched: None }
     }
 
-    pub fn remove(raw: Vec<u8>, matched: &str) -> Self {
+    pub fn remove(raw: Vec<u8>, text: &str, pattern: Pattern) -> Self {
         Self {
             raw,
-            matched: Some(matched.to_string()),
+            matched: Some(Match {
+                text: text.to_string(),
+                pattern,
+            }),
         }
     }
 }
@@ -102,9 +113,12 @@ where
         removed += 1;
         if config.print_removals() {
             log::out(&format!(
-                "{}: {}",
+                "{} [{}] {} ({}): {}",
                 config.removal_verb(),
-                matched.trim_end()
+                matched.pattern.provider,
+                matched.pattern.name,
+                matched.pattern.id,
+                matched.text.trim_end()
             ));
         }
     }

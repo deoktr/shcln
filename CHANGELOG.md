@@ -10,6 +10,16 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add a comprehensive set of secret scanning patterns for provider tokens, private keys, connection strings, and webhooks
+
+### Changed
+
+- Keep all patterns in a single data file, with the prefilter index generated at build time, and compile them lazily only when needed
+- Give every rule a real provider, name, and ID
+- Include the matched pattern's provider, name, and ID when printing removed entries
+
 ## [0.7.1] - 2026-11-08
 
 ### Added

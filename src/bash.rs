@@ -4,7 +4,7 @@ use std::path::Path;
 use crate::cleaner::{clean_history, Entry};
 use crate::config::Config;
 use crate::error::ShclnError;
-use crate::patterns::rm_line;
+use crate::patterns::match_line;
 
 /// Clean a bash history file.
 pub fn clean_bash_history(history_path: &Path, config: &Config) -> Result<u32, ShclnError> {
@@ -46,11 +46,10 @@ impl<R: BufRead> Iterator for BashEntries<R> {
 }
 
 fn match_entry(raw: Vec<u8>) -> Entry {
-    let text = String::from_utf8_lossy(&raw);
-    let matched = rm_line(text.trim_end()).then(|| text.trim_end().to_string());
+    let text = String::from_utf8_lossy(&raw).trim_end().to_string();
 
-    match matched {
-        Some(matched) => Entry::remove(raw, &matched),
+    match match_line(&text) {
+        Some(pattern) => Entry::remove(raw, &text, pattern),
         None => Entry::keep(raw),
     }
 }
