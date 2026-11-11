@@ -34,6 +34,9 @@ fn rx(pattern: &str) -> Regex {
 }
 
 /// Return the first pattern that matches the line, if any.
+///
+/// The pattern list is sorted so that generic fallbacks (IDs starting with
+/// `generic_`) come last; the first match is therefore the most specific one.
 pub fn match_line(line: &str) -> Option<Pattern> {
     let matched = PREFILTER.find_match(line.as_bytes(), |idx| {
         let cell = &PATTERN_CACHE[idx];
@@ -77,12 +80,50 @@ mod tests {
     }
 
     #[test]
+    fn generic_fallbacks_are_last() {
+        let first_generic = PATTERN_IDS.iter().position(|id| id.starts_with("generic_"));
+
+        if let Some(first) = first_generic {
+            assert!(
+                PATTERN_IDS[first..]
+                    .iter()
+                    .all(|id| id.starts_with("generic_")),
+                "generic_* patterns must be sorted after specific patterns"
+            );
+        }
+    }
+
+    #[test]
     fn match_line_returns_pattern_metadata() {
         let token = format!("ops_eyJ{}", "a".repeat(260));
         let pattern = match_line(&token).expect("token should match a pattern");
         assert_eq!(pattern.provider, "1Password");
         assert_eq!(pattern.name, "1Password Service Account Token");
         assert_eq!(pattern.id, "1password_service_account_token");
+
+        let header =
+            match_line("x-api-key: abcdef0123456789").expect("header fallback should match");
+        assert_eq!(header.id, "generic_http_credential_header");
+
+        let url = match_line("https://user:hunter2@example.com/path").expect("URL should match");
+        assert_eq!(url.id, "generic_url_credentials");
+
+        let private_key =
+            match_line("-----BEGIN RSA PRIVATE KEY-----").expect("private key should match");
+        assert_eq!(private_key.id, "generic_private_key");
+
+        let database = match_line("mysql://localhost:3306/mydb?password=secret")
+            .expect("database URL should match");
+        assert_eq!(database.id, "generic_database_url_password");
+
+        let bearer = match_line("Authorization: Bearer abcdefghijklmnop")
+            .expect("generic bearer header should match");
+        assert_eq!(bearer.id, "generic_http_bearer_authentication_header");
+
+        let basic = match_line("Authorization: Basic \"dXNlcjpwYXNz\"")
+            .expect("generic basic header should match");
+        assert_eq!(basic.id, "generic_http_basic_authentication_header");
+
         assert!(match_line("ls -la").is_none());
     }
 
@@ -326,6 +367,68 @@ mod tests {
             "Password=secret;Data Source=localhost;Database=mydb;",
             "Host=localhost;Database=mydb;Username=user;Password=secret;",
             "host=localhost port=5432 dbname=mydb user=foo password=secret",
+            "git clone https://user:hunter2@git.example.com/repo.git",
+            "pip install --index-url https://user:hunter2@pypi.example.com/simple pkg",
+            "redis://:hunter2@redis:6379/0",
+            "amqp://user:hunter2@rabbit:5672/vhost",
+            "SENTRY_DSN=https://key:secret@sentry.io/123",
+            "echo 'https://me:hunter2@github.com' > ~/.git-credentials",
+            "PGPASSWORD=hunter2 psql -h db",
+            "MYSQL_PWD=hunter2 mysql -u root",
+            "SSHPASS=hunter2 sshpass -e ssh user@host",
+            "REDISCLI_AUTH=hunter2 redis-cli ping",
+            "COMPOSER_AUTH='{\"github-oauth\":{\"github.com\":\"hunter2\"}}'",
+            "BW_SESSION=hunter2",
+            "OP_SESSION_my=hunter2",
+            "DOCKER_AUTH_CONFIG='{\"auths\":{\"registry\":{\"auth\":\"dXNlcjpwYXNz\"}}}'",
+            "docker run -e MYSQL_ROOT_PASSWORD=hunter2 mysql",
+            "helm install app chart --set db.password=hunter2",
+            "curl -d 'username=me&password=hunter2' https://example.com/login",
+            "curl -d '{\"password\":\"hunter2\"}' https://example.com/login",
+            "curl -H 'X-Api-Key: abcdef0123456789' https://example.com",
+            "curl -H 'Private-Token: abcdef0123456789' https://example.com",
+            "curl -H Authorization: Basic dXNlcjpwYXNz https://example.com",
+            "curl -b 'session=abcdef0123456789' https://example.com",
+            "curl -H 'Cookie: session=abcdef0123456789' https://example.com",
+            "curl --proxy-user user:hunter2 https://example.com",
+            "curl --oauth2-bearer hunter2 https://example.com",
+            "sshpass -p 'hunter2' ssh user@example.com",
+            "mysql -u root -phunter2 mydb",
+            "mysqldump -u root -p hunter2 mydb",
+            "redis-cli -a hunter2 ping",
+            "mongosh --password hunter2 mongodb://localhost",
+            "sqlcmd -S db -U sa -P hunter2",
+            "htpasswd -b /etc/nginx/.htpasswd user hunter2",
+            "openssl enc -aes-256-cbc -pass pass:hunter2 -in a -out b",
+            "openssl rsa -in key.pem -passin pass:hunter2",
+            "openssl enc -aes-256-cbc -k hunter2 -in a -out b",
+            "ssh-keygen -N hunter2 -f /tmp/key",
+            "gpg --passphrase hunter2 --decrypt file.gpg",
+            "kubectl get pods --token abc123",
+            "helm install x chart --set password=hunter2",
+            "helm install x chart --password hunter2",
+            "docker login -u user -p hunter2 registry.example.com",
+            "podman login --password hunter2 -u user registry.example.com",
+            "oc login -u user -p hunter2",
+            "ldapsearch -x -D cn=admin -w hunter2 -b dc=example",
+            "ldappasswd -s hunter2 -D cn=admin -w adminpw",
+            "smbclient //srv/share -U user%hunter2",
+            "mount -t cifs //srv/share /mnt -o user=u,password=hunter2",
+            "lftp -u user,hunter2 ftp.example.com",
+            "security add-generic-password -a me -s svc -w hunter2",
+            "hdiutil create -encryption -stdinpass -passphrase hunter2 x.dmg",
+            "echo 'machine example.com login me password hunter2' > ~/.netrc",
+            "echo 'db.example.com:5432:mydb:me:hunter2' >> ~/.pgpass",
+            "npm config set //registry.npmjs.org/:_authToken=hunter2",
+            "kubectl create secret generic db --from-literal=password=hunter2",
+            "kubectl apply -f - <<< 'kind: Secret data: password: aHVudGVyMg=='",
+            "echo 'user:hunter2' | chpasswd",
+            "useradd -p '$6$abc$abcdef' me",
+            "usermod -p '$6$abc$abcdef' me",
+            "openssl passwd -1 hunter2",
+            "-----BEGIN OPENSSH PRIVATE KEY-----",
+            "PuTTY-User-Key-File-2: ssh-rsa",
+            "A3-ABCDEF-ABCDEFGHIJK-ABCDE-ABCDE-ABCDE",
         ];
 
         let missing: Vec<_> = lines
@@ -337,6 +440,77 @@ mod tests {
             missing.is_empty(),
             "expected rm_line to match: {missing:#?}"
         );
+    }
+
+    #[test]
+    fn specific_patterns_win_over_generic_fallbacks() {
+        let cases = [
+            ("PGPASSWORD=hunter2 psql -h db", "postgres_pgpassword_env"),
+            ("MYSQL_PWD=hunter2 mysql -u root", "mysql_pwd_env"),
+            ("SSHPASS=hunter2 sshpass -e ssh user@host", "sshpass_env"),
+            ("REDISCLI_AUTH=hunter2 redis-cli ping", "rediscli_auth_env"),
+            (
+                "COMPOSER_AUTH='{\"github-oauth\":{\"github.com\":\"hunter2\"}}'",
+                "composer_auth_env",
+            ),
+            ("BW_SESSION=hunter2", "bitwarden_session_env"),
+            ("BW_CLIENTSECRET=hunter2", "bitwarden_client_secret_env"),
+            ("BW_PASSWORD=hunter2", "bitwarden_password_env"),
+            ("OP_SESSION_my=hunter2", "1password_session_env"),
+            (
+                "OP_SERVICE_ACCOUNT_TOKEN=ops_abc",
+                "1password_service_account_token_env",
+            ),
+            (
+                "DOCKER_AUTH_CONFIG='{\"auths\":{\"registry\":{\"auth\":\"dXNlcjpwYXNz\"}}}'",
+                "docker_auth_config_env",
+            ),
+            (
+                "{\"auths\":{\"registry\":{\"auth\":\"dXNlcjpwYXNzd29yZA==\"}}}",
+                "docker_config_auth",
+            ),
+            (
+                "docker run -e MYSQL_ROOT_PASSWORD=hunter2 mysql",
+                "docker_run_secret_env",
+            ),
+            (
+                "docker run -e PGPASSWORD=hunter2 postgres",
+                "docker_run_secret_env",
+            ),
+            (
+                "curl -d 'username=me&password=hunter2' https://example.com/login",
+                "curl_form_password",
+            ),
+            (
+                "npm config set //registry.npmjs.org/:_authToken=hunter2",
+                "npm_registry_auth_token",
+            ),
+            (
+                "wget --post-data 'username=me&password=hunter2' https://example.com/login",
+                "wget_form_password",
+            ),
+            (
+                "ansible-playbook site.yml -e 'db_password=hunter2'",
+                "ansible_extra_vars_secret",
+            ),
+            (
+                "Authorization: Bearer xoxb-123456789012-123456789012-abcdefghijklmnopqrstuvwx",
+                "slack_api_token",
+            ),
+            (
+                "Authorization: Bearer sk_live_1234567890abcdefghijklmn",
+                "stripe_api_key",
+            ),
+            (
+                "jdbc:mysql://localhost:3306/mydb?user=root&password=secret",
+                "jdbc_url_password",
+            ),
+        ];
+
+        for (line, expected_id) in cases {
+            let pattern = match_line(line).unwrap_or_else(|| panic!("no pattern matched {line:?}"));
+            assert_eq!(pattern.id, expected_id, "unexpected pattern for {line:?}");
+        }
     }
 
     #[test]
@@ -405,6 +579,25 @@ mod tests {
             "sk-or-not-a-key",
             "pk_test_1234567890abcdefghijkl",
             "export OPENAI_API_KEY",
+            "export TOKEN=$TOKEN",
+            "export TOKEN=",
+            "export PASSWORD=",
+            "export PASS=",
+            "export PWD=",
+            "export AUTH=",
+            "export PASSWORD_FILE=/run/secrets/db",
+            "mysql -p",
+            "mysql -u root -P 3306",
+            "sshpass -e ssh user@host",
+            "openssl enc -aes-256-cbc -pass file:/tmp/key",
+            "openssl passwd -help",
+            "security find-generic-password -w",
+            "useradd -m me",
+            "htpasswd -n user",
+            "kubectl get pods",
+            "helm install x chart",
+            "Cookie: theme=dark",
+            "curl -b 'theme=dark' https://example.com",
         ];
 
         let matched: Vec<_> = lines.iter().copied().filter(|line| rm_line(line)).collect();

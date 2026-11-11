@@ -1,5 +1,8 @@
 # provider	name	id	regex
+1Password	1Password Secret Key	1password_secret_key	\bA3-[A-Z0-9]{6}-(?:(?:[A-Z0-9]{11})|(?:[A-Z0-9]{6}-[A-Z0-9]{5}))-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}\b
 1Password	1Password Service Account Token	1password_service_account_token	ops_eyJ[a-zA-Z0-9+/]{250,}={0,3}
+1Password	1Password service account token environment variable	1password_service_account_token_env	(?i)\bOP_SERVICE_ACCOUNT_TOKEN\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
+1Password	1Password session environment variable	1password_session_env	(?i)\bOP_SESSION_[A-Z0-9_]+\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
 Adafruit	Adafruit IO Key	adafruit_io_key	(?:(?:\b(aio\_[a-zA-Z0-9]{28})\b)|(?:(?i)[\w.-]{0,50}?(?:adafruit)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9_-]{32})(?:[\x60'"\s;]|\\[nr]|$)))
 Adobe	Adobe Client Secret	adobe_client_secret	(?:(?:\b(p8e-(?i)[a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:adobe)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)))
 Adobe	Adobe Device Token	adobe_device_token	(?:(?:\b(p8e-(?i)[a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:adobe)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)))
@@ -7,6 +10,7 @@ Adobe	Adobe PAC Token	adobe_pac_token	(?:(?:\b(p8e-(?i)[a-z0-9]{32})(?:[\x60'"\s
 Adobe	Adobe Refresh Token	adobe_refresh_token	(?:(?:\b(p8e-(?i)[a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:adobe)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)))
 Adobe	Adobe Service Token	adobe_service_token	(?:(?:\b(p8e-(?i)[a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:adobe)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)))
 Adobe	Adobe Short-Lived Access Token	adobe_short_lived_access_token	(?:(?:\b(p8e-(?i)[a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:adobe)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)))
+Age	age Secret Key	age_secret_key	\bAGE-SECRET-KEY-1[QPZRY9X8GF2TVDW0S3JN54KHCE6MUA7L]{58}\b
 Aikido	Aikido API Client Secret	aikido_api_client_secret	(?i)\b(?:AIKIDO_API_CLIENT_SECRET|AIKIDO_CI_SCANNING_TOKEN|AIKIDO|AIKIDO_API_KEY|AIKIDO_API_TOKEN|AIKIDO_ACCESS_TOKEN|AIKIDO_SECRET|AIKIDO_CLIENT_SECRET|AIKIDO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Aikido	Aikido CI Scanning Token	aikido_ci_scanning_token	(?i)\b(?:AIKIDO_API_CLIENT_SECRET|AIKIDO_CI_SCANNING_TOKEN|AIKIDO|AIKIDO_API_KEY|AIKIDO_API_TOKEN|AIKIDO_ACCESS_TOKEN|AIKIDO_SECRET|AIKIDO_CLIENT_SECRET|AIKIDO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Airtable	Airtable API Key	airtable_api_key	(?i)[\w.-]{0,50}?(?:airtable)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{17})(?:[\x60'"\s;]|\\[nr]|$)
@@ -24,6 +28,7 @@ Amazon AWS	Amazon Bedrock API key (short-lived)	aws_amazon_bedrock_api_key_short
 Amazon AWS	AWS Access Key ID environment variable	aws_access_key_id_env	AWS_ACCESS_KEY_ID=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Amazon AWS	AWS credentials environment variable	aws_credentials_env	(?i)(?:aws_access_key_id|aws_secret_access_key)=([0-9a-zA-Z/+]{20,40})
 Amazon AWS	AWS Secret Access Key environment variable	aws_secret_access_key_env	AWS_SECRET_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Ansible	Ansible extra vars secret	ansible_extra_vars_secret	(?i)\bansible(?:-playbook)?\b[^\n]{0,240}?(?:-e|--extra-vars)\s+['"]?[^\n'"]*(?:password|passwd|pwd|token|secret|api[_-]?key)=[^\s'"&$]+
 Anthropic	Anthropic Admin API Key	anthropic_admin_api_key	\b(sk-ant-admin01-[a-zA-Z0-9_\-]{93}AA)(?:[\x60'"\s;]|\\[nr]|$)
 Anthropic	Anthropic API Key	anthropic_api_key	(?:(?:\b(sk-ant-api03-[a-zA-Z0-9_\-]{93}AA)(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(sk-ant-(?:admin01|api03)-[\w\-]{93}AA)\b))
 Anthropic	Anthropic Service Account API Key	anthropic_service_api_key	(?:(?:\b(sk-ant-api03-[a-zA-Z0-9_\-]{93}AA)(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(sk-ant-(?:admin01|api03)-[\w\-]{93}AA)\b))
@@ -131,6 +136,9 @@ Bitrise	Bitrise Personal Access Token	bitrise_personal_access_token	(?i)\b(?:BIT
 Bitrise	Bitrise Workspace API Token	bitrise_workspace_api_token	(?i)\b(?:BITRISE_PERSONAL_ACCESS_TOKEN|BITRISE_WORKSPACE_API_TOKEN|BITRISE|BITRISE_API_KEY|BITRISE_API_TOKEN|BITRISE_ACCESS_TOKEN|BITRISE_SECRET|BITRISE_CLIENT_SECRET|BITRISE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Bittrex	Bittrex API Key environment variable	bittrex_api_key_env	BITTREX_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Bittrex	Bittrex API Secret environment variable	bittrex_api_secret_env	BITTREX_API_SECRET=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Bitwarden	Bitwarden client secret environment variable	bitwarden_client_secret_env	(?i)\bBW_CLIENTSECRET\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
+Bitwarden	Bitwarden password environment variable	bitwarden_password_env	(?i)\bBW_PASSWORD\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
+Bitwarden	Bitwarden session environment variable	bitwarden_session_env	(?i)\bBW_SESSION\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
 Block Protocol	Block Protocol API Key	block_protocol_api_key	(?i)\b(?:BLOCK_PROTOCOL_API_KEY|BLOCK_PROTOCOL|BLOCK_PROTOCOL_API_KEY|BLOCK_PROTOCOL_API_TOKEN|BLOCK_PROTOCOL_ACCESS_TOKEN|BLOCK_PROTOCOL_SECRET|BLOCK_PROTOCOL_CLIENT_SECRET|BLOCK_PROTOCOL_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Brevo	Sendinblue API Key	sendinblue_api_key	\b(xkeysib-[a-f0-9]{64}\-(?i)[a-z0-9]{16})(?:[\x60'"\s;]|\\[nr]|$)
 Brevo	Sendinblue SMTP Key	sendinblue_smtp_key	(?:(?:\b(xkeysib-[a-f0-9]{64}\-(?i)[a-z0-9]{16})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)\b(?:SENDINBLUE_SMTP_KEY|BREVO_SMTP_KEY|SENDINBLUE|SENDINBLUE_API_KEY|SENDINBLUE_API_TOKEN|SENDINBLUE_ACCESS_TOKEN|SENDINBLUE_SECRET|SENDINBLUE_CLIENT_SECRET|SENDINBLUE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
@@ -154,21 +162,29 @@ Cfx.re	Cfx.re Server Key	cfxre_server_key	(?i)\b(?:CFXRE_SERVER_KEY|CFX_RE|CFX_R
 Checkout.com	Checkout.com Production Secret Key	checkout_production_secret_key	(?:(?:(?i)\b(?:CHECKOUT_PRODUCTION_SECRET_KEY|CHECKOUT_TEST_SECRET_KEY|CHECKOUT_COM|CHECKOUT_COM_API_KEY|CHECKOUT_COM_API_TOKEN|CHECKOUT_COM_ACCESS_TOKEN|CHECKOUT_COM_SECRET|CHECKOUT_COM_CLIENT_SECRET|CHECKOUT_COM_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Checkout.com	Checkout.com Test Secret Key	checkout_test_secret_key	(?:(?:(?i)\b(?:CHECKOUT_PRODUCTION_SECRET_KEY|CHECKOUT_TEST_SECRET_KEY|CHECKOUT_COM|CHECKOUT_COM_API_KEY|CHECKOUT_COM_API_TOKEN|CHECKOUT_COM_ACCESS_TOKEN|CHECKOUT_COM_SECRET|CHECKOUT_COM_CLIENT_SECRET|CHECKOUT_COM_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bsk_sbox_[A-Za-z0-9]{20,}\b))
 Chief Tools	Chief Tools Token	chief_tools_token	(?i)\b(?:CHIEF_TOOLS_TOKEN|CHIEF_TOOLS|CHIEF_TOOLS_API_KEY|CHIEF_TOOLS_API_TOKEN|CHIEF_TOOLS_ACCESS_TOKEN|CHIEF_TOOLS_SECRET|CHIEF_TOOLS_CLIENT_SECRET|CHIEF_TOOLS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Chpasswd	Chpasswd password	chpasswd_password	(?i)\b[^\s:]+:[^\s'"]+['"]?\s*\|[^\n]{0,40}?\bchpasswd\b
 CircleCI	Circle Token environment variable	circle_token_env	CIRCLE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 CircleCI	CircleCI Bot API Token	circleci_bot_access_token	(?:(?:(CCIPAT_[a-zA-Z0-9]{22}_[a-fA-F0-9]{40}))|(?:(?i)\b(?:CIRCLECI|CIRCLECI_API_KEY|CIRCLECI_API_TOKEN|CIRCLECI_ACCESS_TOKEN|CIRCLECI_SECRET|CIRCLECI_CLIENT_SECRET|CIRCLECI_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 CircleCI	CircleCI Personal Access Token	circleci_personal_access_token	(?:(?:(CCIPAT_[a-zA-Z0-9]{22}_[a-fA-F0-9]{40}))|(?:(?i)\b(?:CIRCLECI|CIRCLECI_API_KEY|CIRCLECI_API_TOKEN|CIRCLECI_ACCESS_TOKEN|CIRCLECI_SECRET|CIRCLECI_CLIENT_SECRET|CIRCLECI_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 CircleCI	CircleCI Project Access Token	circleci_project_access_token	(?:(?:(CCIPAT_[a-zA-Z0-9]{22}_[a-fA-F0-9]{40}))|(?:(?i)\b(?:CIRCLECI|CIRCLECI_API_KEY|CIRCLECI_API_TOKEN|CIRCLECI_ACCESS_TOKEN|CIRCLECI_SECRET|CIRCLECI_CLIENT_SECRET|CIRCLECI_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 CircleCI	CircleCI Release API Token	circleci_release_integration_token	(?:(?:(CCIPAT_[a-zA-Z0-9]{22}_[a-fA-F0-9]{40}))|(?:(?i)\b(?:CIRCLECI|CIRCLECI_API_KEY|CIRCLECI_API_TOKEN|CIRCLECI_ACCESS_TOKEN|CIRCLECI_SECRET|CIRCLECI_CLIENT_SECRET|CIRCLECI_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+ClickHouse	ClickHouse Cloud API Secret	clickhouse_cloud_api_secret	\b4b1d[A-Za-z0-9]{38}\b
 Clojars	Clojars Deploy Token	clojars_deploy_token	(?i)CLOJARS_[a-z0-9]{60}
 Cloudflare	Cloudflare Account API Token	cloudflare_account_api_token	(?:(?:\b(cf[ua]t_[a-zA-Z0-9]{40}[a-f0-9]{8})\b)|(?:(?i)[\w.-]{0,50}?(?:cloudflare)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9_-]{40})(?:[\x60'"\s;]|\\[nr]|$)))
 Cloudflare	Cloudflare API Key environment variable	cloudflare_api_key_env	CLOUDFLARE_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Cloudflare	Cloudflare Global User API Key	cloudflare_global_user_api_key	(?:(?:\b(cfk_[a-zA-Z0-9]{40}[a-f0-9]{8})\b)|(?:(?i)[\w.-]{0,50}?(?:cloudflare)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{37})(?:[\x60'"\s;]|\\[nr]|$)))
+Cloudflare	Cloudflare Origin CA Key	cloudflare_origin_ca_key	\bv1\.0-[a-f0-9]{24}-[a-f0-9]{146}\b
 Cloudflare	Cloudflare Password environment variable	cf_password_env	CF_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Cloudflare	Cloudflare User API Token	cloudflare_user_api_token	(?:(?:\b(cf[ua]t_[a-zA-Z0-9]{40}[a-f0-9]{8})\b)|(?:(?i)[\w.-]{0,50}?(?:cloudflare)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9_-]{40})(?:[\x60'"\s;]|\\[nr]|$)))
+Cloudinary	Cloudinary URL with credentials	cloudinary_url	(?i)\bcloudinary://[^/\s:@'"]*:[^/\s@'"\x60$]{3,}@[^/\s'"]+
 Cloudsmith	Cloudsmith API Key	cloudsmith_api_key	(?i)\b(?:CLOUDSMITH_API_KEY|CLOUDSMITH|CLOUDSMITH_API_KEY|CLOUDSMITH_API_TOKEN|CLOUDSMITH_ACCESS_TOKEN|CLOUDSMITH_SECRET|CLOUDSMITH_CLIENT_SECRET|CLOUDSMITH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Cockroach Labs	CockroachDB Cloud API Key	ccdb_api_key	(?i)\b(?:CCDB_API_KEY|COCKROACH_API_KEY|COCKROACHDB|COCKROACHDB_API_KEY|COCKROACHDB_API_TOKEN|COCKROACHDB_ACCESS_TOKEN|COCKROACHDB_SECRET|COCKROACHDB_CLIENT_SECRET|COCKROACHDB_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Code Climate	Code Climate Repo Token environment variable	codeclimate_repo_token_env	CODECLIMATE_REPO_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Codecov	Codecov Access Token	codecov_access_token	(?i)[\w.-]{0,50}?(?:codecov)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)
 Cohere	Cohere API Key	cohere_api_key	[\w.-]{0,50}?(?i:[\w.-]{0,50}?(?:cohere|CO_API_KEY)(?:[ \t\w.-]{0,20})[\s'"]{0,3})(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-zA-Z0-9]{40})(?:[\x60'"\s;]|\\[nr]|$)
+Coinbase	Coinbase Access Token	coinbase_access_token	(?i)[\w.-]{0,50}?(?:coinbase)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9_-]{64})(?:[\x60'"\s;]|\\[nr]|$)
+Composer	Composer auth environment variable	composer_auth_env	(?i)\bCOMPOSER_AUTH\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
+Confluent	Confluent Access Token	confluent_access_token	(?i)[\w.-]{0,50}?(?:confluent)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{16})(?:[\x60'"\s;]|\\[nr]|$)
 Contentful	Contentful Personal Access Token	contentful_personal_access_token	\b(CFPAT-[a-zA-Z0-9_\-]{43})\b
 Contentful	Contentful Web Token	contentful_web_token	(?:(?:(?i)[\w.-]{0,50}?(?:contentful)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9=_\-]{43})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)\b(?:CONTENTFUL|CONTENTFUL_API_KEY|CONTENTFUL_API_TOKEN|CONTENTFUL_ACCESS_TOKEN|CONTENTFUL_SECRET|CONTENTFUL_CLIENT_SECRET|CONTENTFUL_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Contributed Systems	Contributed Systems Credentials	contributed_systems_credentials	(?i)\b(?:CONTRIBUTED_SYSTEMS_CREDENTIALS|CONTRIBUTED_SYSTEMS|CONTRIBUTED_SYSTEMS_API_KEY|CONTRIBUTED_SYSTEMS_API_TOKEN|CONTRIBUTED_SYSTEMS_ACCESS_TOKEN|CONTRIBUTED_SYSTEMS_SECRET|CONTRIBUTED_SYSTEMS_CLIENT_SECRET|CONTRIBUTED_SYSTEMS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
@@ -177,9 +193,11 @@ Coveo	Coveo API Key	coveo_api_key	(?i)\b(?:COVEO_ACCESS_TOKEN|COVEO_API_KEY|COVE
 Coveralls	Coveralls Repo Token environment variable	coveralls_repo_token_env	COVERALLS_REPO_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 crates.io	Cargo Registry Token environment variable	cargo_registry_token_env	CARGO_REGISTRY_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 crates.io	Crates.io API Token	cratesio_api_token	(?:(?:(?i)\b(?:CRATESIO_API_TOKEN|CRATES_IO|CRATES_IO_API_KEY|CRATES_IO_API_TOKEN|CRATES_IO_ACCESS_TOKEN|CRATES_IO_SECRET|CRATES_IO_CLIENT_SECRET|CRATES_IO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bcio[A-Za-z0-9]{32,}\b))
+curl	curl form password	curl_form_password	(?i)\bcurl\b[^\n]{0,240}?(?:-d|--data|--data-raw|--data-urlencode)\s+['"]?[^\s'"]*(?:password|passwd|pwd|token|secret|api[_-]?key)=[^\s'"&$]+
+curl	curl OAuth2 bearer token	curl_oauth2_bearer	curl.*--oauth2-bearer(?:[ =])([^ ]*)
+curl	curl proxy credentials	curl_proxy_credentials	curl.*--proxy-user(?:[ =])([^ ]*)
 curl	curl user credentials	curl_user_credentials	curl.*(?:-u|--user)(?:[ =])([^ ]*)
 Database	Connection string with password	connection_string_password	(?i)(?:\b(?:server|host|data source)\s*=[^;\s]+.*\b(?:pwd|password)\s*=[^;\s]+|\b(?:pwd|password)\s*=[^;\s]+.*\b(?:server|host|data source)\s*=[^;\s]+)
-Database	Database URL with password parameter	database_url_password	(?i)\b(?:mysql|postgres(?:ql)?)(?:\+[a-z0-9]+)?://[^\s?]+\?[^\s]*(?:pwd|password)=[^&\s]+
 Databento	Databento API Key	databento_api_key	(?i)\b(?:DATABENTO_API_KEY|DATABENTO|DATABENTO_API_KEY|DATABENTO_API_TOKEN|DATABENTO_ACCESS_TOKEN|DATABENTO_SECRET|DATABENTO_CLIENT_SECRET|DATABENTO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Databricks	Databricks Account Session Token	databricks_account_session_token	\b(dapi[a-f0-9]{32}(?:-\d)?)(?:[\x60'"\s;]|\\[nr]|$)
 Databricks	Databricks API Token	databricks_access_token	\b(dapi[a-f0-9]{32}(?:-\d)?)(?:[\x60'"\s;]|\\[nr]|$)
@@ -210,11 +228,15 @@ DigitalOcean	DigitalOcean Personal Access Token	digitalocean_personal_access_tok
 DigitalOcean	DigitalOcean Refresh Token	digitalocean_refresh_token	(?:(?:\b((?:dop|doo|dor)_v1_[a-f0-9]{64})\b)|(?:(?i)\b(dor_v1_[a-f0-9]{64})(?:[\x60'"\s;]|\\[nr]|$)))
 DigitalOcean	DigitalOcean System Token	digitalocean_system_token	(?:(?:\b((?:dop|doo|dor)_v1_[a-f0-9]{64})\b)|(?:\b(doo_v1_[a-f0-9]{64})(?:[\x60'"\s;]|\\[nr]|$)))
 Discord	Discord Bot Token	discord_bot_token	(?:(?:\b[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}\b)|(?:(?:discord(?:app)?\.com/api/webhooks/[0-9]{17,}/[0-9A-Za-z_-]+))|(?:(?i)[\w.-]{0,50}?(?:discord)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{64})(?:[\x60'"\s;]|\\[nr]|$)))
+Docker	Docker auth config environment variable	docker_auth_config_env	(?i)\bDOCKER_AUTH_CONFIG\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
+Docker	Docker config auth field	docker_config_auth	(?i)"auth"\s*:\s*"[A-Za-z0-9+/=]{16,}"
 Docker	Docker Hub Password environment variable	dockerhub_password_env	DOCKERHUB_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Docker	Docker login password	docker_login_password	\b(?:docker|podman|skopeo|buildah|oc)\b[^\n]{0,160}?\blogin\b[^\n]{0,160}?\s(?:-p|--password)(?:\s+|=)\s*['"]?[^\s'"$-][^\s'"]*
 Docker	Docker Organization Access Token	docker_organization_access_token	(?:(?:\b(dckr_pat_[a-zA-Z0-9_-]{27}|dckr_oat_[a-zA-Z0-9_-]{32})(?:[^a-zA-Z0-9_-]|\z))|(?:(?i)\b(?:DOCKER_ORGANIZATION_ACCESS_TOKEN|DOCKER|DOCKER_API_KEY|DOCKER_API_TOKEN|DOCKER_ACCESS_TOKEN|DOCKER_SECRET|DOCKER_CLIENT_SECRET|DOCKER_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Docker	Docker Password environment variable	docker_password_env	DOCKER_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Docker	Docker password supplied via stdin	docker_password_stdin	docker.*--password-stdin
 Docker	Docker Personal Access Token	docker_personal_access_token	(?:(?:\b(dckr_pat_[a-zA-Z0-9_-]{27}|dckr_oat_[a-zA-Z0-9_-]{32})(?:[^a-zA-Z0-9_-]|\z))|(?:(?i)\b(?:DOCKER_PERSONAL_ACCESS_TOKEN|DOCKER_TOKEN|DOCKER|DOCKER_API_KEY|DOCKER_API_TOKEN|DOCKER_ACCESS_TOKEN|DOCKER_SECRET|DOCKER_CLIENT_SECRET|DOCKER_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+Docker	Docker secret environment variable	docker_run_secret_env	(?i)\b(?:docker|podman)\b[^\n]{0,200}?\s(?:-e|--env)\s+[^\s=]*(?:password|passwd|pwd|secret|token|api[_-]?key)[^\s=]*=[^\s'"$]+
 Docker	Docker Swarm Join Token	docker_swarm_join_token	(?i)\bSWMTKN-[0-9a-z-]{1,3}-[0-9a-z]{20,}\b
 Docker	Docker Swarm Unlock Key	docker_swarm_unlock_key	(?i)\b(?:DOCKER_SWARM_UNLOCK_KEY|SWARM_UNLOCK_KEY|DOCKER_SWARM|DOCKER_SWARM_API_KEY|DOCKER_SWARM_API_TOKEN|DOCKER_SWARM_ACCESS_TOKEN|DOCKER_SWARM_SECRET|DOCKER_SWARM_CLIENT_SECRET|DOCKER_SWARM_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Doppler	Doppler Audit Token	doppler_audit_token	(?:(?:\b(dp\.(?:ct|pt|st(?:\.[a-z0-9\-_]{2,35})?|sa|scim|audit)\.[a-zA-Z0-9]{40,44})\b)|(?:(?i)\b(?:DOPPLER_AUDIT_TOKEN|DOPPLER|DOPPLER_API_KEY|DOPPLER_API_TOKEN|DOPPLER_ACCESS_TOKEN|DOPPLER_SECRET|DOPPLER_CLIENT_SECRET|DOPPLER_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
@@ -244,6 +266,7 @@ Fieldguide	Fieldguide API Token	fieldguide_api_token	(?i)\b(?:FIELDGUIDE_API_TOK
 Figma	Figma Personal Access Token	figma_pat	(?:(?:(figp_[a-zA-Z0-9_=-]{40,54})(?:[^a-zA-Z0-9_=-]|\z))|(?:\bfigd_[A-Za-z0-9_-]{40,}\b))
 Figma	Figma SCIM API Token	figma_scim_token	(?:(?:(figp_[a-zA-Z0-9_=-]{40,54})(?:[^a-zA-Z0-9_=-]|\z))|(?:(?i)\b(?:FIGMA_SCIM_TOKEN|FIGMA|FIGMA_API_KEY|FIGMA_API_TOKEN|FIGMA_ACCESS_TOKEN|FIGMA_SECRET|FIGMA_CLIENT_SECRET|FIGMA_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Finicity	Finicity App Key	finicity_app_key	(?:(?:(?i)[\w.-]{0,50}?(?:finicity)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:finicity)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{20})(?:[\x60'"\s;]|\\[nr]|$)))
+Finnhub	Finnhub Access Token	finnhub_access_token	(?i)[\w.-]{0,50}?(?:finnhub)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{20})(?:[\x60'"\s;]|\\[nr]|$)
 Firebase	Firebase API Token environment variable	firebase_api_token_env	FIREBASE_API_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Firebase	Firebase Cloud Messaging Server Key	firebase_cloud_messaging_server_key	(?:(?:\bAAAA[A-Za-z0-9_-]{7}:[A-Za-z0-9_-]{140}\b)|(?:(?i)\b(?:FIREBASE_CLOUD_MESSAGING_SERVER_KEY|FIREBASE|FIREBASE_API_KEY|FIREBASE_API_TOKEN|FIREBASE_ACCESS_TOKEN|FIREBASE_SECRET|FIREBASE_CLIENT_SECRET|FIREBASE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Firebase	Firebase Token environment variable	firebase_token_env	FIREBASE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
@@ -251,18 +274,17 @@ Fireworks AI	Fireworks AI API key	fireworks_api_key	\b(fw_[0-9a-zA-Z]{30,})\b
 Flickr	Flickr API Key	flickr_api_key	(?i)[\w.-]{0,50}?(?:flickr)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)
 Flutterwave	Flutterwave Live API Secret Key	flutterwave_live_api_secret_key	(?:(?:FLWSECK_TEST-(?i)[a-h0-9]{32}-X)|(?:\b(FLWSECK-[0-9a-z]{32}-X)\b))
 Flutterwave	Flutterwave Test API Secret Key	flutterwave_test_api_secret_key	(?:(?:FLWSECK_TEST-(?i)[a-h0-9]{32}-X)|(?:\b(FLWSECK-[0-9a-z]{32}-X)\b))
+Fly.io	Fly.io Access Token	flyio_access_token	\b(?:fo1_[\w-]{43}|fm1[ar]_[A-Za-z0-9+/]{100,}={0,3}|fm2_[A-Za-z0-9+/]{100,}={0,3})\b
 FOSSA	FOSSA API Key environment variable	fossa_api_key_env	FOSSA_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Frame.io	Frame.io Developer Token	frameio_developer_token	(?:(?:fio-u-(?i)[a-z0-9\-_=]{64})|(?:\b(fio-u-[0-9a-zA-Z_-]{64})\b))
 Frame.io	Frame.io JSON Web Token	frameio_jwt	(?:(?:\b(ey[a-zA-Z0-9]{17,}\.ey[a-zA-Z0-9\/\\_-]{17,}\.(?:[a-zA-Z0-9\/\\_-]{10,}={0,2})?)(?:[\x60'"\s;]|\\[nr]|$))|(?:fio-u-(?i)[a-z0-9\-_=]{64}))
 FullStory	FullStory API Key	fullstory_api_key	\b(na1\.[A-Za-z0-9\+\/]{100})\b
-Generic	Private key	private_key	(?i)(-----BEGIN[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----)
 GitHub	GitHub App Installation Access Token	github_app_installation_access_token	(?:(?:ghu|ghs)_[0-9a-zA-Z]{36})
 GitHub	GitHub Enterprise Token environment variable	gh_enterprise_token_env	GH_ENTERPRISE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 GitHub	GitHub Enterprise Token environment variable	github_enterprise_token_env	GITHUB_ENTERPRISE_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 GitHub	GitHub OAuth Access Token	github_oauth_access_token	gho_[0-9a-zA-Z]{36}
 GitHub	GitHub Personal Access Token	github_personal_access_token	(?:(?:ghp_[0-9a-zA-Z]{36})|(?:github_pat_\w{82}))
 GitHub	GitHub Refresh Token	github_refresh_token	ghr_[0-9a-zA-Z]{36}
-GitHub	GitHub SSH Private Key	github_ssh_private_key	(?i)-----BEGIN[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----
 GitHub	GitHub Test Token	github_test_token	(?:(?:ghp_[0-9a-zA-Z]{36})|(?:github_pat_\w{82}))
 GitHub	GitHub Token environment variable	github_token_env	GITHUB_TOKEN=["']?([0-9a-zA-Z*_/+]{1,100})["']?
 GitHub	GitHub Token environment variable	gh_token_env	GH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
@@ -283,11 +305,13 @@ GitLab	GitLab Runner Authentication Token	gitlab_runner_auth_token	(?:(?:glrt-[0
 GitLab	GitLab Runner Registration Token	gitlab_runner_registration_token	GR1348941[\w-]{20}
 GitLab	GitLab SCIM Token	gitlab_scim_oauth_token	glsoat-[0-9a-zA-Z_\-]{20}
 GitLab	GitLab Token environment variable	gitlab_token_env	GITLAB_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Gitter	Gitter Access Token	gitter_access_token	(?i)[\w.-]{0,50}?(?:gitter)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9_-]{40})(?:[\x60'"\s;]|\\[nr]|$)
 GoCardless	GoCardless Live Access Token	gocardless_live_access_token	(?:(?:(?i)[\w.-]{0,50}?(?:gocardless)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(live_(?i)[a-z0-9\-_=]{40})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(live_[0-9A-Za-z\_\-]{40}[ "'\r\n]{1})))
 GoCardless	GoCardless Sandbox Access Token	gocardless_sandbox_access_token	(?:(?:\b(live_[0-9A-Za-z\_\-]{40}[ "'\r\n]{1}))|(?:(?i)\b(?:GOCARDLESS_SANDBOX_ACCESS_TOKEN|GOCARDLESS|GOCARDLESS_API_KEY|GOCARDLESS_API_TOKEN|GOCARDLESS_ACCESS_TOKEN|GOCARDLESS_SECRET|GOCARDLESS_CLIENT_SECRET|GOCARDLESS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Google	GCP API Key Bound to a Service Account	google_gcp_api_key_bound_service_account	(?:(?:\b(AIza[\w-]{35})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)\b(?:GOOGLE|GOOGLE_API_KEY|GOOGLE_API_TOKEN|GOOGLE_ACCESS_TOKEN|GOOGLE_SECRET|GOOGLE_CLIENT_SECRET|GOOGLE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Google	Google API Key	google_api_key	\b(AIza[\w-]{35})(?:[\x60'"\s;]|\\[nr]|$)
 Google	Google API Key environment variable	google_api_key_env	GOOGLE_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Google	Google Chat Webhook URL	google_chat_webhook_url	https://chat\.googleapis\.com/v1/spaces/[A-Za-z0-9_-]+/messages\?key=[A-Za-z0-9_-]+&token=[A-Za-z0-9_-]+
 Google	Google Cloud Service Account Credentials	google_cloud_service_account_credentials	(?:(?:(?i)"type"\s*:\s*"service_account")|(?:(?i)"private_key"\s*:\s*"-----BEGIN PRIVATE KEY-----))
 Google	Google Cloud Storage Service Account Access Key ID	google_cloud_storage_access_key_secret, google_cloud_storage_service_account_access_key_id	(?:(?:(?:(?:(?i)\b(?:GOOGLE_CLOUD_STORAGE_ACCESS_KEY_SECRET|GOOGLE_CLOUD_STORAGE|GOOGLE_CLOUD_STORAGE_API_KEY|GOOGLE_CLOUD_STORAGE_API_TOKEN|GOOGLE_CLOUD_STORAGE_ACCESS_TOKEN|GOOGLE_CLOUD_STORAGE_SECRET|GOOGLE_CLOUD_STORAGE_CLIENT_SECRET|GOOGLE_CLOUD_STORAGE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:(?i)GOOGLE_CLOUD_STORAGE_ACCESS_KEY_SECRET)))|(?:(?i)\b(?:GOOGLE_CLOUD_STORAGE_SERVICE_ACCOUNT_ACCESS_KEY_ID|GOOGLE_CLOUD_STORAGE|GOOGLE_CLOUD_STORAGE_API_KEY|GOOGLE_CLOUD_STORAGE_API_TOKEN|GOOGLE_CLOUD_STORAGE_ACCESS_TOKEN|GOOGLE_CLOUD_STORAGE_SECRET|GOOGLE_CLOUD_STORAGE_CLIENT_SECRET|GOOGLE_CLOUD_STORAGE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Google	Google Cloud Storage User Access Key ID	google_cloud_storage_access_key_secret, google_cloud_storage_user_access_key_id	(?:(?:(?:(?:(?i)\b(?:GOOGLE_CLOUD_STORAGE_ACCESS_KEY_SECRET|GOOGLE_CLOUD_STORAGE|GOOGLE_CLOUD_STORAGE_API_KEY|GOOGLE_CLOUD_STORAGE_API_TOKEN|GOOGLE_CLOUD_STORAGE_ACCESS_TOKEN|GOOGLE_CLOUD_STORAGE_SECRET|GOOGLE_CLOUD_STORAGE_CLIENT_SECRET|GOOGLE_CLOUD_STORAGE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:(?i)GOOGLE_CLOUD_STORAGE_ACCESS_KEY_SECRET)))|(?:(?i)\b(?:GOOGLE_CLOUD_STORAGE_USER_ACCESS_KEY_ID|GOOGLE_CLOUD_STORAGE|GOOGLE_CLOUD_STORAGE_API_KEY|GOOGLE_CLOUD_STORAGE_API_TOKEN|GOOGLE_CLOUD_STORAGE_ACCESS_TOKEN|GOOGLE_CLOUD_STORAGE_SECRET|GOOGLE_CLOUD_STORAGE_CLIENT_SECRET|GOOGLE_CLOUD_STORAGE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
@@ -295,6 +319,7 @@ Google	Google Gemini API Key	google_gemini_api_key	\b(AIzaSy[A-Za-z0-9_-]{33})
 Google	Google OAuth Access Token	google_oauth_access_token	\b(ya29\.(?i:[a-z0-9_-]{10,}))(?:[^a-z0-9_-]|\z)
 Google	Google OAuth Client ID	google_oauth_client_id, google_oauth_client_secret	(?:(?:(?i)\b(?:GOOGLE_OAUTH_CLIENT_ID|GOOGLE_CLIENT_ID|GOOGLE_OAUTH|GOOGLE_OAUTH_API_KEY|GOOGLE_OAUTH_API_TOKEN|GOOGLE_OAUTH_ACCESS_TOKEN|GOOGLE_OAUTH_SECRET|GOOGLE_OAUTH_CLIENT_SECRET|GOOGLE_OAUTH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:(?:(?:\bGOCSPX-[A-Za-z0-9_-]{28}\b)|(?:(?i)\b(?:GOOGLE_OAUTH_CLIENT_SECRET|GOOGLE_CLIENT_SECRET|GOOGLE_OAUTH|GOOGLE_OAUTH_API_KEY|GOOGLE_OAUTH_API_TOKEN|GOOGLE_OAUTH_ACCESS_TOKEN|GOOGLE_OAUTH_SECRET|GOOGLE_OAUTH_CLIENT_SECRET|GOOGLE_OAUTH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))))
 Google	Google OAuth Refresh Token	google_oauth_refresh_token	(?:(?:\b1//[0-9A-Za-z_-]{20,}\b)|(?:(?i)\b(?:GOOGLE_OAUTH_REFRESH_TOKEN|GOOGLE_OAUTH|GOOGLE_OAUTH_API_KEY|GOOGLE_OAUTH_API_TOKEN|GOOGLE_OAUTH_ACCESS_TOKEN|GOOGLE_OAUTH_SECRET|GOOGLE_OAUTH_CLIENT_SECRET|GOOGLE_OAUTH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+GPG	GPG passphrase	gpg_passphrase	\bgpg(?:2)?\b[^\n]{0,160}?\s--passphrase(?:=|\s+)\s*['"]?[^\s'"$]+
 Grafana	Grafana Cloud API Key	grafana_cloud_api_key	(?:(?:\b(glc_eyJ[A-Za-z0-9+\/=]{60,160}))|(?:(?i)\b(glc_[A-Za-z0-9+/]{32,400}={0,3})(?:[\x60'"\s;]|\\[nr]|$)))
 Grafana	Grafana Cloud API Token	grafana_cloud_api_token	(?:(?:\b(glc_eyJ[A-Za-z0-9+\/=]{60,160}))|(?:(?i)\b(glc_[A-Za-z0-9+/]{32,400}={0,3})(?:[\x60'"\s;]|\\[nr]|$)))
 Grafana	Grafana Project API Key	grafana_project_api_key	(?:(?:\b(glc_eyJ[A-Za-z0-9+\/=]{60,160}))|(?:(?i)\b(eyJrIjoi[A-Za-z0-9]{70,400}={0,3})(?:[\x60'"\s;]|\\[nr]|$)))
@@ -304,6 +329,7 @@ GuardSquare	GuardSquare AppSweep API Key	guardsquare_appsweep_api_key	(?i)\b(?:G
 GuardSquare	GuardSquare CLI Access Token	guardsquare_cli_access_token	(?i)\b(?:GUARDSQUARE_APPSWEEP_API_KEY|GUARDSQUARE_CLI_ACCESS_TOKEN|GUARDSQUARE_MAVEN_TOKEN|GUARDSQUARE|GUARDSQUARE_API_KEY|GUARDSQUARE_API_TOKEN|GUARDSQUARE_ACCESS_TOKEN|GUARDSQUARE_SECRET|GUARDSQUARE_CLIENT_SECRET|GUARDSQUARE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 GuardSquare	GuardSquare Maven Token	guardsquare_maven_token	(?i)\b(?:GUARDSQUARE_APPSWEEP_API_KEY|GUARDSQUARE_CLI_ACCESS_TOKEN|GUARDSQUARE_MAVEN_TOKEN|GUARDSQUARE|GUARDSQUARE_API_KEY|GUARDSQUARE_API_TOKEN|GUARDSQUARE_ACCESS_TOKEN|GUARDSQUARE_SECRET|GUARDSQUARE_CLIENT_SECRET|GUARDSQUARE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Hack Club	Hack Club AI Key	hackclub_ai_api_key	(?i)\b(?:HACKCLUB_AI_API_KEY|HACK_CLUB_AI_KEY|HACK_CLUB|HACK_CLUB_API_KEY|HACK_CLUB_API_TOKEN|HACK_CLUB_ACCESS_TOKEN|HACK_CLUB_SECRET|HACK_CLUB_CLIENT_SECRET|HACK_CLUB_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Harness	Harness API Key	harness_api_key	\b(?:pat|sat)\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9]{24}\.[A-Za-z0-9]{20}\b
 HashiCorp	Consul HTTP Token environment variable	consul_http_token_env	CONSUL_HTTP_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 HashiCorp	HashiCorp Vault Batch Token	hashicorp_vault_batch_token	\b(hvb\.[\w-]{138,300})(?:[\x60'"\s;]|\\[nr]|$)
 HashiCorp	HashiCorp Vault Client Key environment variable	vault_client_key_env	VAULT_CLIENT_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
@@ -312,6 +338,7 @@ HashiCorp	HashiCorp Vault Service Token	hashicorp_vault_service_token	(?:(?:\b((
 HashiCorp	HashiCorp Vault Token environment variable	vault_token_env	VAULT_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 HashiCorp	Terraform Cloud / Enterprise API Token	terraform_api_token	(?i)[a-z0-9]{14}\.(?-i:atlasv1)\.[a-z0-9\-_=]{60,70}
 hCaptcha	hCaptcha Siteverify Secret	hcaptcha_siteverify_secret	(?i)\b(?:HCAPTCHA_SITEVERIFY_SECRET|HCAPTCHA|HCAPTCHA_API_KEY|HCAPTCHA_API_TOKEN|HCAPTCHA_ACCESS_TOKEN|HCAPTCHA_SECRET|HCAPTCHA_CLIENT_SECRET|HCAPTCHA_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Hdiutil	Hdiutil passphrase	hdiutil_passphrase	(?i)\bhdiutil\b[^\n]{0,200}?\s-passphrase\s+['"]?[^\s'"$]+
 Heroku	Heroku API Key environment variable	heroku_api_key_env	HEROKU_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Heroku	Heroku Platform API OAuth2 Token	heroku_platform_api_oauth2_token	(?:(?:\b((HRKU-AA[0-9a-zA-Z_-]{58}))(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:heroku)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(HRKU-AA[0-9a-zA-Z_-]{58})\b))
 Heroku	Heroku Postgres Connection URL	heroku_postgres_connection_url	(?i)\bpostgres(?:ql)?://[^:\s/]+:[^@\s/]+@[^/\s]+
@@ -323,8 +350,7 @@ Highnote	Highnote SK Test Key	highnote_sk_test_key	(?:(?:(?i)\b(?:HIGHNOTE_RK_LI
 HOP	HOP Bearer	hop_bearer	(?i)\b(?:HOP_BEARER|HOP_PAT|HOP_PTK|HOP|HOP_API_KEY|HOP_API_TOKEN|HOP_ACCESS_TOKEN|HOP_SECRET|HOP_CLIENT_SECRET|HOP_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 HOP	HOP PAT	hop_pat	(?i)\b(?:HOP_BEARER|HOP_PAT|HOP_PTK|HOP|HOP_API_KEY|HOP_API_TOKEN|HOP_ACCESS_TOKEN|HOP_SECRET|HOP_CLIENT_SECRET|HOP_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 HOP	HOP PTK	hop_ptk	(?i)\b(?:HOP_BEARER|HOP_PAT|HOP_PTK|HOP|HOP_API_KEY|HOP_API_TOKEN|HOP_ACCESS_TOKEN|HOP_SECRET|HOP_CLIENT_SECRET|HOP_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
-HTTP	HTTP Basic authentication header	http_basic_authentication_header	(?i:authorization):(?:.*)(?i:basic).(.*)("|'|\x60|\$\()
-HTTP	HTTP Bearer authentication header	http_bearer_authentication_header	(?i)\b(?:authorization|proxy-authorization)\s*:\s*(?:bearer|token)\s+([A-Za-z0-9._~+/-]{8,}=*)
+Htpasswd	Htpasswd password	htpasswd_password	\bhtpasswd\b[^\n]{0,120}?\s-[A-Za-z]*b[A-Za-z]*\s+\S+\s+\S+
 Hubspot	Hubspot API Key	hubspot_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:hubspot)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(pat-(?:eu|na)1-[A-Za-z0-9]{8}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{12})\b))
 Hubspot	Hubspot Personal Access Key	hubspot_personal_access_key	(?:(?:\bpat-(?:na|eu)1-[A-Za-z0-9-]{30,}\b)|(?:\b(pat-(?:eu|na)1-[A-Za-z0-9]{8}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{12})\b))
 Hubspot	Hubspot Private Apps User Token	hubspot_private_apps_user_token	(?:(?:\bpat-(?:na|eu)1-[A-Za-z0-9-]{30,}\b)|(?:\b(pat-(?:eu|na)1-[A-Za-z0-9]{8}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{4}\-[A-Za-z0-9]{12})\b))
@@ -341,6 +367,11 @@ JFrog	JFrog Platform Access Token	jfrog_platform_access_token	(?:(?:(?i)[\w.-]{0
 JFrog	JFrog Platform API Key	jfrog_platform_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:jfrog|artifactory|bintray|xray)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{73})(?:[\x60'"\s;]|\\[nr]|$))|(?:\bAKCp[A-Za-z0-9]{69}\b))
 JFrog	JFrog Platform Reference Token	jfrog_platform_reference_token	\bcmVmd[A-Za-z0-9]{59}\b
 Jina AI	Jina AI API key	jina_api_key	\b(jina_[0-9a-zA-Z]{20,})\b
+Kubernetes	Helm password	helm_password	(?i)\bhelm\b[^\n]{0,200}?\s--password(?:=|\s+)\s*['"]?[^\s'"$]+
+Kubernetes	Helm secret value	helm_secret_value	(?i)\bhelm\b[^\n]{0,200}?\s--set(?:-string)?\s+[^=\s]*(?:password|passwd|pwd|token|secret|api[_-]?key)[^=\s]*=[^\s'"]+
+Kubernetes	Kubectl token	kubectl_token	(?i)\bkubectl\b[^\n]{0,160}?\s--token(?:=|\s+)\s*['"]?[^\s'"$]+
+Kubernetes	Kubernetes secret literal	kubernetes_secret_literal	(?i)\bkubectl\b[^\n]{0,200}?\bcreate\s+secret\b[^\n]{0,200}?\s--from-literal=[^\s=]*(?:password|passwd|pwd|token|secret)[^\s=]*=[^\s'"]+
+Kubernetes	Kubernetes secret YAML	kubernetes_secret_yaml	(?i)\bkind:\s*["']?secret["']?[\s\S]{0,300}?\bdata:\s*[\s\S]{0,200}?[A-Za-z0-9._-]+:\s*[A-Za-z0-9+/=]{10,}
 Langchain	LangSmith License Key	langsmith_license_key	(?:(?:(?i)\b(?:LANGCHAIN_API_PERSONAL_KEY|LANGCHAIN_API_SERVER_KEY|LANGSMITH_LICENSE_KEY|LANGSMITH_SCIM_BEARER_TOKEN|LANGSMITH|LANGSMITH_API_KEY|LANGSMITH_API_TOKEN|LANGSMITH_ACCESS_TOKEN|LANGSMITH_SECRET|LANGSMITH_CLIENT_SECRET|LANGSMITH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\blsv2_(?:pt|sk|be)_[A-Za-z0-9_-]{20,}\b))
 Langchain	LangSmith Personal Access Token	langchain_api_personal_key	(?:(?:(?i)\b(?:LANGCHAIN_API_PERSONAL_KEY|LANGCHAIN_API_SERVER_KEY|LANGSMITH_LICENSE_KEY|LANGSMITH_SCIM_BEARER_TOKEN|LANGSMITH|LANGSMITH_API_KEY|LANGSMITH_API_TOKEN|LANGSMITH_ACCESS_TOKEN|LANGSMITH_SECRET|LANGSMITH_CLIENT_SECRET|LANGSMITH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\blsv2_(?:pt|sk|be)_[A-Za-z0-9_-]{20,}\b))
 Langchain	LangSmith SCIM Bearer Token	langsmith_scim_bearer_token	(?:(?:(?i)\b(?:LANGCHAIN_API_PERSONAL_KEY|LANGCHAIN_API_SERVER_KEY|LANGSMITH_LICENSE_KEY|LANGSMITH_SCIM_BEARER_TOKEN|LANGSMITH|LANGSMITH_API_KEY|LANGSMITH_API_TOKEN|LANGSMITH_ACCESS_TOKEN|LANGSMITH_SECRET|LANGSMITH_CLIENT_SECRET|LANGSMITH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\blsv2_(?:pt|sk|be)_[A-Za-z0-9_-]{20,}\b))
@@ -351,6 +382,9 @@ Lark	Lark MCP Grant Token	lark_mcp_grant_token	(?:(?:(?i)\b(?:LARK_APAAS_CLIENT_
 Lark	Lark Meego Plugin Secret	lark_meego_plugin_secret	(?:(?:(?i)\b(?:LARK_APAAS_CLIENT_SECRET|LARK_APP_SECRET|LARK_MCP_GRANT_TOKEN|LARK_MEEGO_PLUGIN_SECRET|LARK_USER_SESSION|LARK|LARK_API_KEY|LARK_API_TOKEN|LARK_ACCESS_TOKEN|LARK_SECRET|LARK_CLIENT_SECRET|LARK_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bcli_[A-Za-z0-9]{16,}\b))
 Lark	Lark User Session	lark_user_session	(?:(?:(?i)\b(?:LARK_APAAS_CLIENT_SECRET|LARK_APP_SECRET|LARK_MCP_GRANT_TOKEN|LARK_MEEGO_PLUGIN_SECRET|LARK_USER_SESSION|LARK|LARK_API_KEY|LARK_API_TOKEN|LARK_ACCESS_TOKEN|LARK_SECRET|LARK_CLIENT_SECRET|LARK_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bcli_[A-Za-z0-9]{16,}\b))
 LaunchDarkly	LaunchDarkly API Token	launchdarkly_access_token	(?:(?:(?i)[\w.-]{0,50}?(?:launchdarkly)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9=_\-]{40})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b((?:api|sdk)-[a-z0-9]{8}-[a-z0-9]{4}-4[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12})\b))
+LDAP	LDAP new password	ldap_new_password	\bldappasswd\b[^\n]{0,160}?\s(?:-s|--newpass)\s+['"]?[^\s'"$]+
+LDAP	LDAP password	ldap_password	\b(?:ldapsearch|ldapadd|ldapmodify)\b[^\n]{0,160}?\s(?:-w|--password)\s+['"]?[^\s'"$]+
+LFTP	Lftp password	lftp_password	\blftp\b[^\n]{0,160}?\s-u\s+[^,\s]+,[^\s'"]+
 Lichess	Lichess OAuth Access Token	lichess_oauth_access_token	(?i)\b(?:LICHESS_OAUTH_ACCESS_TOKEN|LICHESS_PERSONAL_ACCESS_TOKEN|LICHESS|LICHESS_API_KEY|LICHESS_API_TOKEN|LICHESS_ACCESS_TOKEN|LICHESS_SECRET|LICHESS_CLIENT_SECRET|LICHESS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Lichess	Lichess Personal Access Token	lichess_personal_access_token	(?i)\b(?:LICHESS_OAUTH_ACCESS_TOKEN|LICHESS_PERSONAL_ACCESS_TOKEN|LICHESS|LICHESS_API_KEY|LICHESS_API_TOKEN|LICHESS_ACCESS_TOKEN|LICHESS_SECRET|LICHESS_CLIENT_SECRET|LICHESS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Lightspeed	Lightspeed Personal Access Token	lightspeed_xs_pat	(?i)\b(?:LIGHTSPEED_XS_PAT|LIGHTSPEED|LIGHTSPEED_API_KEY|LIGHTSPEED_API_TOKEN|LIGHTSPEED_ACCESS_TOKEN|LIGHTSPEED_SECRET|LIGHTSPEED_CLIENT_SECRET|LIGHTSPEED_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
@@ -358,6 +392,8 @@ Limbar	Limbar Token	limbar_token	(?i)\b(?:LIMBAR_TOKEN|LIMBAR|LIMBAR_API_KEY|LIM
 Linear	Linear API Key	linear_api_key	(?:(?:lin_api_(?i)[a-z0-9]{40})|(?:\b(lin_api_[0-9A-Za-z]{40})\b))
 Linear	Linear OAuth Access Token	linear_oauth_access_token	(?:(?:lin_api_(?i)[a-z0-9]{40})|(?:(?i)[\w.-]{0,50}?(?:linear)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$)))
 LinkedIn	LinkedIn Client Secret	linkedin_client_secret	(?:(?:(?i)[\w.-]{0,50}?(?:linked[_-]?in)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{16})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)[\w.-]{0,50}?(?:linked[_-]?in)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{14})(?:[\x60'"\s;]|\\[nr]|$)))
+Linux	Mount password	mount_password	(?i)\bmount\b[^\n]{0,200}?\b(?:password|passwd|pwd)=\s*["']?[^\s,'"]+
+Linux	User password hash	user_password_hash	(?i:\b(?:useradd|usermod)\b)[^\n]{0,160}?\s(?:-p|--password)\s*['"]?[^\s'"]+
 Lob	Lob Live API Key	lob_live_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:lob)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}((live|test)_[a-f0-9]{35})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b((live|test)_[a-f0-9]{35})\b))
 Lob	Lob Test API Key	lob_test_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:lob)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}((live|test)_[a-f0-9]{35})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b((live|test)_[a-f0-9]{35})\b))
 Localstack	Localstack API Key	localstack_api_key	(?i)\b(?:LOCALSTACK_API_KEY|LOCALSTACK|LOCALSTACK_API_KEY|LOCALSTACK_API_TOKEN|LOCALSTACK_ACCESS_TOKEN|LOCALSTACK_SECRET|LOCALSTACK_CLIENT_SECRET|LOCALSTACK_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
@@ -378,12 +414,14 @@ Mailgun	Mailgun API key (quoted)	mailgun_api_key_quoted	"key-[0-9a-zA-Z]{32}"
 Mailgun	Mailgun API Key environment variable	mailgun_api_key_env	MAILGUN_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Mailgun	Mailgun SMTP Credential	mailgun_smtp_credential	(?:(?:(?i)[\w.-]{0,50}?(?:mailgun)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(key-[a-f0-9]{32})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)\b(?:MAILGUN_SMTP_CREDENTIAL|MAILGUN|MAILGUN_API_KEY|MAILGUN_API_TOKEN|MAILGUN_ACCESS_TOKEN|MAILGUN_SECRET|MAILGUN_CLIENT_SECRET|MAILGUN_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Mapbox	Mapbox Secret Access Token	mapbox_secret_access_token	(?:(?:\bsk\.[A-Za-z0-9._-]{60,}\b)|(?:(?i)\b(?:MAPBOX_SECRET_ACCESS_TOKEN|MAPBOX|MAPBOX_API_KEY|MAPBOX_API_TOKEN|MAPBOX_ACCESS_TOKEN|MAPBOX_SECRET|MAPBOX_CLIENT_SECRET|MAPBOX_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+Mattermost	Mattermost Access Token	mattermost_access_token	(?i)[\w.-]{0,50}?(?:mattermost)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{26})(?:[\x60'"\s;]|\\[nr]|$)
 MaxMind	MaxMind License Key	maxmind_license_key	\b([A-Za-z0-9]{6}_[A-Za-z0-9]{29}_mmk)(?:[\x60'"\s;]|\\[nr]|$)
 Meraki	Meraki Dashboard API Key	meraki_api_key	[\w.-]{0,50}?(?i:[\w.-]{0,50}?(?:(?-i:[Mm]eraki|MERAKI))(?:[ \t\w.-]{0,20})[\s'"]{0,3})(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([0-9a-f]{40})(?:[\x60'"\s;]|\\[nr]|$)
 Mercury	Mercury Non-Production API Token	mercury_non_production_api_token	(?i)\b(?:MERCURY_NON_PRODUCTION_API_TOKEN|MERCURY_PRODUCTION_API_TOKEN|MERCURY|MERCURY_API_KEY|MERCURY_API_TOKEN|MERCURY_ACCESS_TOKEN|MERCURY_SECRET|MERCURY_CLIENT_SECRET|MERCURY_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Mercury	Mercury Production API Token	mercury_production_api_token	(?i)\b(?:MERCURY_NON_PRODUCTION_API_TOKEN|MERCURY_PRODUCTION_API_TOKEN|MERCURY|MERCURY_API_KEY|MERCURY_API_TOKEN|MERCURY_ACCESS_TOKEN|MERCURY_SECRET|MERCURY_CLIENT_SECRET|MERCURY_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Mergify	Mergify Application Key	mergify_application_key	(?i)\b(?:MERGIFY_APPLICATION_KEY|MERGIFY|MERGIFY_API_KEY|MERGIFY_API_TOKEN|MERGIFY_ACCESS_TOKEN|MERGIFY_SECRET|MERGIFY_CLIENT_SECRET|MERGIFY_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 MessageBird	MessageBird API Key	messagebird_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:message[_-]?bird)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{25})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)\b(?:MESSAGEBIRD_API_KEY|MESSAGEBIRD|MESSAGEBIRD_API_KEY|MESSAGEBIRD_API_TOKEN|MESSAGEBIRD_ACCESS_TOKEN|MESSAGEBIRD_SECRET|MESSAGEBIRD_CLIENT_SECRET|MESSAGEBIRD_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+Microsoft	Microsoft Teams Incoming Webhook URL	microsoft_teams_webhook	https://[a-z0-9]+\.webhook\.office\.com/webhookb2/[a-z0-9-]+@[a-z0-9-]+/IncomingWebhook/[a-z0-9]+/[a-z0-9-]+
 Microsoft	Outlook webhook URL	outlook_webhook_url	https://outlook.office.com/webhook/([0-9a-f-]{36})/@
 Microsoft	Power Automate Webhook SAS	power_automate_webhook_sas	(?:(?:https://[a-z0-9]+\.\d+\.environment\.api\.powerplatform\.com(?::\d+)?/powerautomate/automations/direct/workflows/[a-f0-9]{32}/triggers/manual/paths/invoke\?[^\s"'<>]+)|(?:https://[a-z0-9]+\.webhook\.office\.com/webhookb2/[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}@[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}/IncomingWebhook/[a-z0-9]{32}/[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}))
 Midtrans	Midtrans Production Server Key	midtrans_production_server_key	(?:(?:(?i)\b(?:MIDTRANS_PRODUCTION_SERVER_KEY|MIDTRANS_SANDBOX_SERVER_KEY|MIDTRANS|MIDTRANS_API_KEY|MIDTRANS_API_TOKEN|MIDTRANS_ACCESS_TOKEN|MIDTRANS_SECRET|MIDTRANS_CLIENT_SECRET|MIDTRANS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\b(?:SB-Mid-server|Mid-server)-[A-Za-z0-9_-]{20,}\b))
@@ -391,7 +429,11 @@ Midtrans	Midtrans Sandbox Server Key	midtrans_sandbox_server_key	(?:(?:(?i)\b(?:
 Mistral AI	Mistral AI API Key	mistral_ai_api_key	(?:(?:(?i)\b(?:MISTRAL_API_KEY|MISTRAL_AI_API_KEY|MISTRAL|MISTRAL_API_KEY|MISTRAL_API_TOKEN|MISTRAL_ACCESS_TOKEN|MISTRAL_SECRET|MISTRAL_CLIENT_SECRET|MISTRAL_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bmistral-[A-Za-z0-9]{16,}\b))
 MongoDB	MongoDB Atlas Database URI with credentials	mongodb_atlas_db_uri_with_credentials	\b(mongodb(?:\+srv)?://(?P<username>\S{3,50}):(?P<password>\S{3,88})@(?P<host>[-.%\w]+(?::\d{1,5})?(?:,[-.%\w]+(?::\d{1,5})?)*)(?:/(?P<authdb>[\w-]+)?(?P<options>\?\w+=[\w@/.$-]+(?:&(?:amp;)?\w+=[\w@/.$-]+)*)?)?)(?:\b|$)
 MongoDB	MongoDB Atlas Service Account Secret	mongodb_atlas_service_account_secret	(?:(?:\b(mongodb(?:\+srv)?://(?P<username>\S{3,50}):(?P<password>\S{3,88})@(?P<host>[-.%\w]+(?::\d{1,5})?(?:,[-.%\w]+(?::\d{1,5})?)*)(?:/(?P<authdb>[\w-]+)?(?P<options>\?\w+=[\w@/.$-]+(?:&(?:amp;)?\w+=[\w@/.$-]+)*)?)?)(?:\b|$))|(?:(?i)\b(?:MONGODB_ATLAS_SERVICE_ACCOUNT_SECRET|MONGODB_ATLAS|MONGODB_ATLAS_API_KEY|MONGODB_ATLAS_API_TOKEN|MONGODB_ATLAS_ACCESS_TOKEN|MONGODB_ATLAS_SECRET|MONGODB_ATLAS_CLIENT_SECRET|MONGODB_ATLAS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+MongoDB	MongoDB password	mongo_password	\b(?:mongo|mongosh)\b[^\n]{0,160}?\s(?:-p|--password)(?:\s+|=)\s*['"]?[^\s'"$-][^\s'"]*
 MySQL	MySQL connection URL	mysql_connection_url	(?i)\bmysql(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+
+MySQL	MySQL MYSQL_PWD environment variable	mysql_pwd_env	(?i)\bMYSQL_PWD\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
+MySQL	MySQL password	mysql_password	\b(?:mysql|mysqldump|mariadb|mariadb-dump)\b[^\n]{0,120}?\s(?:-p|--password)(?:\s*=\s*|\s+)?(?:"[^"$]+"|'[^'$]+'|[^\s'"$-][^\s'"]*)
+MySQL	MySQL password environment variable	mysql_password_env	(?i)\bMYSQL_(?:ROOT_)?PASSWORD\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
 Naver Cloud	Naver Cloud Access Key ID	navercloud_pub_access_key	(?:(?:(?i)\b(?:NAVERCLOUD_ACCESS_KEY|NAVERCLOUD_SECRET_KEY|NCLOUD_ACCESS_KEY_ID|NCLOUD_SECRET_KEY|NAVER_CLOUD|NAVER_CLOUD_API_KEY|NAVER_CLOUD_API_TOKEN|NAVER_CLOUD_ACCESS_TOKEN|NAVER_CLOUD_SECRET|NAVER_CLOUD_CLIENT_SECRET|NAVER_CLOUD_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bncloud_[A-Za-z0-9_-]{20,}\b))
 Naver Cloud	Naver Cloud Gov Access Key ID	navercloud_gov_access_key	(?:(?:(?i)\b(?:NAVERCLOUD_ACCESS_KEY|NAVERCLOUD_SECRET_KEY|NCLOUD_ACCESS_KEY_ID|NCLOUD_SECRET_KEY|NAVER_CLOUD|NAVER_CLOUD_API_KEY|NAVER_CLOUD_API_TOKEN|NAVER_CLOUD_ACCESS_TOKEN|NAVER_CLOUD_SECRET|NAVER_CLOUD_CLIENT_SECRET|NAVER_CLOUD_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bncloud_[A-Za-z0-9_-]{20,}\b))
 Naver Cloud	Naver Cloud Gov Secret Key	navercloud_gov_access_key_secret	(?:(?:(?i)\b(?:NAVERCLOUD_ACCESS_KEY|NAVERCLOUD_SECRET_KEY|NCLOUD_ACCESS_KEY_ID|NCLOUD_SECRET_KEY|NAVER_CLOUD|NAVER_CLOUD_API_KEY|NAVER_CLOUD_API_TOKEN|NAVER_CLOUD_ACCESS_TOKEN|NAVER_CLOUD_SECRET|NAVER_CLOUD_CLIENT_SECRET|NAVER_CLOUD_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bncloud_[A-Za-z0-9_-]{20,}\b))
@@ -403,6 +445,8 @@ Naver Cloud	Naver Cloud Secure Token Service Secret	navercloud_pub_sts_secret	(?
 Neon	Neon API Key	neon_api_key	(?:(?:(?i)\b(?:NEON_API_KEY|NEON|NEON_API_KEY|NEON_API_TOKEN|NEON_ACCESS_TOKEN|NEON_SECRET|NEON_CLIENT_SECRET|NEON_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bnapi_[A-Za-z0-9]{20,}\b)|(?:\bpostgres(?:ql)?://[^:\s/]+:[^@\s/]+@[^/\s]+))
 Neon	Neon Connection URI	neon_connection_uri	(?:(?:(?i)\b(?:NEON_API_KEY|NEON|NEON_API_KEY|NEON_API_TOKEN|NEON_ACCESS_TOKEN|NEON_SECRET|NEON_CLIENT_SECRET|NEON_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bnapi_[A-Za-z0-9]{20,}\b)|(?:\bpostgres(?:ql)?://[^:\s/]+:[^@\s/]+@[^/\s]+))
 Netflix	Netflix NetKey	netflix_netkey	(?i)\b(?:NETFLIX_NETKEY|NETFLIX|NETFLIX_API_KEY|NETFLIX_API_TOKEN|NETFLIX_ACCESS_TOKEN|NETFLIX_SECRET|NETFLIX_CLIENT_SECRET|NETFLIX_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Netlify	Netlify Access Token	netlify_access_token	(?i)[\w.-]{0,50}?(?:netlify)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9=_\-]{40,46})(?:[\x60'"\s;]|\\[nr]|$)
+Netrc	Netrc password	netrc_password	(?i)\bmachine\s+\S+\s+login\s+\S+\s+password\s+[^\s'"]+
 New Relic	New Relic API Key environment variable	newrelic_api_key_env	NEWRELIC_API_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
 New Relic	New Relic Insights Query Key	new_relic_insights_query_key	\b(NRIQ-[a-zA-Z0-9-_]{25})
 New Relic	New Relic License Key	new_relic_license_key	\b(([0-9a-f]{32}|eu01xx[0-9a-f]{26})FFFFNRAL)\b
@@ -415,6 +459,7 @@ Notion	Notion Integration Token	notion_integration_token	(?:(?:\b(ntn_[0-9]{11}[
 Notion	Notion OAuth Client Secret	notion_oauth_client_secret	(?:(?:\bsecret_[A-Za-z0-9]{43}\b)|(?:(?i)\b(?:NOTION|NOTION_API_KEY|NOTION_API_TOKEN|NOTION_ACCESS_TOKEN|NOTION_SECRET|NOTION_CLIENT_SECRET|NOTION_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 npm	npm Access Token	npm_access_token	(?:(?:(?i)\b(npm_[a-z0-9]{36})(?:[\x60'"\s;]|\\[nr]|$))|(?:(npm_[0-9a-zA-Z]{36})))
 npm	npm Auth Token environment variable	npm_auth_token_env	NPM_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
+npm	npm registry auth token	npm_registry_auth_token	(?i)\bnpm\b[^\n]{0,200}?(?:_authToken|_auth)\s*=\s*['"]?[^\s'"$]+
 npm	npm Token environment variable	npm_token_env	NPM_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 NuGet	NuGet API Key	nuget_api_key	(?:(?:\boy2[a-z0-9]{43}\b)|(?:(?i)<add key=\"(?:(?:ClearText)?Password)\"\s*value=\"(.{8,})\"\s*/>))
 NVIDIA	NVIDIA NGC API key	nvidia_ngc_api_key	\b(nvapi-[0-9a-zA-Z]{30,})\b
@@ -433,6 +478,10 @@ Onfido	Onfido Live API Token	onfido_live_api_token	(?:(?:(?i)\b(?:ONFIDO_LIVE_AP
 Onfido	Onfido Sandbox API Token	onfido_sandbox_api_token	(?:(?:(?i)\b(?:ONFIDO_LIVE_API_TOKEN|ONFIDO_SANDBOX_API_TOKEN|ONFIDO|ONFIDO_API_KEY|ONFIDO_API_TOKEN|ONFIDO_ACCESS_TOKEN|ONFIDO_SECRET|ONFIDO_CLIENT_SECRET|ONFIDO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bapi_(?:live|sandbox)_[A-Za-z0-9_-]{20,}\b))
 OpenAI	OpenAI API Key	openai_api_key	(?:(?:\b(sk-(?:proj|svcacct|admin)-(?:[A-Za-z0-9_-]{74}|[A-Za-z0-9_-]{58})T3BlbkFJ(?:[A-Za-z0-9_-]{74}|[A-Za-z0-9_-]{58})\b|sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(sk-(?:(?:proj|svcacct|service)-[A-Za-z0-9_-]+|[a-zA-Z0-9]+)T3BlbkFJ[A-Za-z0-9_-]+)\b))
 OpenRouter	OpenRouter API Key	openrouter_api_key	(?:(?:\b(sk-or-v1-[0-9a-f]{64})\b)|(?:\bsk-or-v1-[0-9a-f]{64}\b))
+OpenShift	OpenShift User Token	openshift_user_token	\bsha256~[\w-]{43}\b
+OpenSSL	OpenSSL enc passphrase	openssl_enc_passphrase	\bopenssl\b[^\n]{0,160}?\s-k\s+['"]?[^\s'"$-][^\s'"]*
+OpenSSL	OpenSSL passphrase	openssl_passphrase	\bopenssl\b[^\n]{0,160}?\s-(?:pass|passin|passout|password)\s+pass:[^\s$]+
+OpenSSL	OpenSSL password	openssl_passwd	(?i:\bopenssl\s+passwd\b)[^\n]{0,160}?\s[^-][^\s]*
 OpenStack	OpenStack Password environment variable	os_password_env	OS_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?
 OpenVSX	OpenVSX Access Token	openvsx_access_token	(?i)\b(?:OPENVSX_ACCESS_TOKEN|OPENVSX|OPENVSX_API_KEY|OPENVSX_API_TOKEN|OPENVSX_ACCESS_TOKEN|OPENVSX_SECRET|OPENVSX_CLIENT_SECRET|OPENVSX_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Openweather	Openweather API Key	openweather_api_key	(?i)\b(?:OPENWEATHER_API_KEY|OPENWEATHER|OPENWEATHER_API_KEY|OPENWEATHER_API_TOKEN|OPENWEATHER_ACCESS_TOKEN|OPENWEATHER_SECRET|OPENWEATHER_CLIENT_SECRET|OPENWEATHER_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
@@ -452,6 +501,7 @@ Pineapple Technologies Limited	Pineapple Technologies Incident API Key	pineapple
 Pinecone	Pinecone API Key	pinecone_api_key	(?:(?:\b(pcsk_([A-Za-z0-9]{5,6})_[A-Za-z0-9]{63})\b)|(?:\bpcsk_[A-Za-z0-9]{30,}\b))
 Pinterest	Pinterest Access Token	pinterest_access_token	(?:(?:(?i)\b(?:PINTEREST_ACCESS_TOKEN|PINTEREST_REFRESH_TOKEN|PINTEREST|PINTEREST_API_KEY|PINTEREST_API_TOKEN|PINTEREST_ACCESS_TOKEN|PINTEREST_SECRET|PINTEREST_CLIENT_SECRET|PINTEREST_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bpina_[A-Za-z0-9_-]{20,}\b))
 Pinterest	Pinterest Refresh Token	pinterest_refresh_token	(?:(?:(?i)\b(?:PINTEREST_ACCESS_TOKEN|PINTEREST_REFRESH_TOKEN|PINTEREST|PINTEREST_API_KEY|PINTEREST_API_TOKEN|PINTEREST_ACCESS_TOKEN|PINTEREST_SECRET|PINTEREST_CLIENT_SECRET|PINTEREST_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bpina_[A-Za-z0-9_-]{20,}\b))
+Plaid	Plaid Access Token	plaid_access_token	\baccess-(?:sandbox|development|production)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b
 PlanetScale	PlanetScale Database Password	planetscale_database_password	(?i)\b(pscale_pw_(?i)[\w=\.-]{32,64})(?:[\x60'"\s;]|\\[nr]|$)
 PlanetScale	PlanetScale OAuth Token	planetscale_oauth_token	\b(pscale_oauth_[\w=\.-]{32,64})(?:[\x60'"\s;]|\\[nr]|$)
 PlanetScale	PlanetScale Service Token	planetscale_service_token	\b(pscale_tkn_(?i)[\w=\.-]{32,64})(?:[\x60'"\s;]|\\[nr]|$)
@@ -467,8 +517,10 @@ Polar	Polar Customer Session Token	polar_customer_session_token	(?:(?:(?i)\b(?:P
 Polar	Polar Personal Access Token	polar_personal_access_token	(?:(?:(?i)\b(?:POLAR_ACCESS_TOKEN|POLAR_CLIENT_SECRET|POLAR_PERSONAL_ACCESS_TOKEN|POLAR_REFRESH_TOKEN|POLAR_USER_SESSION_TOKEN|POLAR|POLAR_API_KEY|POLAR_API_TOKEN|POLAR_ACCESS_TOKEN|POLAR_SECRET|POLAR_CLIENT_SECRET|POLAR_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bpolar_[A-Za-z0-9_-]{20,}\b))
 Polar	Polar Refresh Token	polar_refresh_token	(?:(?:(?i)\b(?:POLAR_ACCESS_TOKEN|POLAR_CLIENT_SECRET|POLAR_PERSONAL_ACCESS_TOKEN|POLAR_REFRESH_TOKEN|POLAR_USER_SESSION_TOKEN|POLAR|POLAR_API_KEY|POLAR_API_TOKEN|POLAR_ACCESS_TOKEN|POLAR_SECRET|POLAR_CLIENT_SECRET|POLAR_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bpolar_[A-Za-z0-9_-]{20,}\b))
 Polar	Polar User Session Token	polar_user_session_token	(?:(?:(?i)\b(?:POLAR_ACCESS_TOKEN|POLAR_CLIENT_SECRET|POLAR_PERSONAL_ACCESS_TOKEN|POLAR_REFRESH_TOKEN|POLAR_USER_SESSION_TOKEN|POLAR|POLAR_API_KEY|POLAR_API_TOKEN|POLAR_ACCESS_TOKEN|POLAR_SECRET|POLAR_CLIENT_SECRET|POLAR_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bpolar_[A-Za-z0-9_-]{20,}\b))
+PostgreSQL	Pgpass entry	pgpass_entry	\b(?:[A-Za-z0-9_-]*\.[A-Za-z0-9_.-]+|localhost|\*):(?:\d+|\*):[^\s:]*:[^\s:]+:[^\s'"]+
 PostgreSQL	PostgreSQL connection URL	postgres_connection_string	(?i)\bpostgres(?:ql)?(?:\+[a-z0-9]+)?://[^'"`<>/:\s@]+:[^'"`<>/@\s]+@[^?'"`\s]+
 PostgreSQL	PostgreSQL Password environment variable	postgres_password_env	POSTGRES_PASSWORD=["']?([0-9a-zA-Z*/+]{1,100})["']?
+PostgreSQL	PostgreSQL PGPASSWORD environment variable	postgres_pgpassword_env	(?i)\bPGPASSWORD\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
 PostHog	PostHog OAuth Access Token	posthog_oauth_access_token	(?:(?:\b(phx_[a-zA-Z0-9_]{43,48})\b)|(?:(?i)\b(?:POSTHOG_OAUTH_ACCESS_TOKEN|POSTHOG|POSTHOG_API_KEY|POSTHOG_API_TOKEN|POSTHOG_ACCESS_TOKEN|POSTHOG_SECRET|POSTHOG_CLIENT_SECRET|POSTHOG_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 PostHog	PostHog OAuth Refresh Token	posthog_oauth_refresh_token	(?:(?:\b(phx_[a-zA-Z0-9_]{43,48})\b)|(?:(?i)\b(?:POSTHOG_OAUTH_REFRESH_TOKEN|POSTHOG|POSTHOG_API_KEY|POSTHOG_API_TOKEN|POSTHOG_ACCESS_TOKEN|POSTHOG_SECRET|POSTHOG_CLIENT_SECRET|POSTHOG_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 PostHog	PostHog Personal API Key	posthog_personal_api_key	(?:(?:\b(phx_[a-zA-Z0-9_]{43,48})\b)|(?:(?i)\b(?:POSTHOG_PERSONAL_API_KEY|POSTHOG_API_KEY|POSTHOG|POSTHOG_API_KEY|POSTHOG_API_TOKEN|POSTHOG_ACCESS_TOKEN|POSTHOG_SECRET|POSTHOG_CLIENT_SECRET|POSTHOG_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
@@ -483,6 +535,7 @@ Proctorio	Proctorio Registration Key	proctorio_registration_key	(?i)\b(?:PROCTOR
 Proctorio	Proctorio Secret Key	proctorio_secret_key	(?i)\b(?:PROCTORIO_CONSUMER_KEY|PROCTORIO_LINKAGE_KEY|PROCTORIO_REGISTRATION_KEY|PROCTORIO_SECRET_KEY|PROCTORIO|PROCTORIO_API_KEY|PROCTORIO_API_TOKEN|PROCTORIO_ACCESS_TOKEN|PROCTORIO_SECRET|PROCTORIO_CLIENT_SECRET|PROCTORIO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Proof	Proof Full Access API Key	proof_full_access_api_key	(?i)\b(?:PROOF_FULL_ACCESS_API_KEY|PROOF|PROOF_API_KEY|PROOF_API_TOKEN|PROOF_ACCESS_TOKEN|PROOF_SECRET|PROOF_CLIENT_SECRET|PROOF_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Pulumi	Pulumi Access Token	pulumi_access_token	(?:(?:\b(pul-[a-f0-9]{40})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(pul-[a-z0-9]{40})\b))
+PuTTY	PuTTY private key	putty_private_key	(?i)\bPuTTY-User-Key-File-\d+:
 Pydantic Services Inc.	Logfire Token	logfire_token	(?:(?:(?i)\b(?:LOGFIRE_TOKEN|PYDANTIC_AI_GATEWAY_API_KEY|PYDANTIC|PYDANTIC_API_KEY|PYDANTIC_API_TOKEN|PYDANTIC_ACCESS_TOKEN|PYDANTIC_SECRET|PYDANTIC_CLIENT_SECRET|PYDANTIC_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\blogfire_[A-Za-z0-9_-]{20,}\b))
 Pydantic Services Inc.	Pydantic AI Gateway API Key	pydantic_ai_gateway_api_key	(?:(?:(?i)\b(?:LOGFIRE_TOKEN|PYDANTIC_AI_GATEWAY_API_KEY|PYDANTIC|PYDANTIC_API_KEY|PYDANTIC_API_TOKEN|PYDANTIC_ACCESS_TOKEN|PYDANTIC_SECRET|PYDANTIC_CLIENT_SECRET|PYDANTIC_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\blogfire_[A-Za-z0-9_-]{20,}\b))
 PyPI	PyPI API Token	pypi_api_token	(?:(?:pypi-AgEIcHlwaS5vcmc[\w-]{50,1000})|(?:(pypi-AgEIcHlwaS5vcmcCJ[a-zA-Z0-9-_]{150,157})))
@@ -495,6 +548,8 @@ Raycast	Raycast Access Token	raycast_access_token	(?i)\b(?:RAYCAST_ACCESS_TOKEN|
 ReadMe	ReadMe API Key	readmeio_api_access_token	(?:(?:\b(rdme_[a-z0-9]{70})(?:[\x60'"\s;]|\\[nr]|$))|(?:(rdme_[a-z0-9]{70})))
 ReadMe	ReadMe API Key environment variable	readme_api_key_env	README_API_KEY=["']?([0-9a-zA-Z*/+]{0,100})["']?
 redirect.pizza	redirect.pizza API Token	redirect_pizza_api_token	(?i)\b(?:REDIRECT_PIZZA_API_TOKEN|REDIRECT_PIZZA|REDIRECT_PIZZA_API_KEY|REDIRECT_PIZZA_API_TOKEN|REDIRECT_PIZZA_ACCESS_TOKEN|REDIRECT_PIZZA_SECRET|REDIRECT_PIZZA_CLIENT_SECRET|REDIRECT_PIZZA_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Redis	Redis password	redis_cli_password	\bredis-cli\b[^\n]{0,160}?\s(?:-a|--pass)(?:\s+|=)\s*['"]?[^\s'"$-][^\s'"]*
+Redis	Redis password environment variable	rediscli_auth_env	(?i)\bREDISCLI_AUTH\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
 Replicate	Replicate API Token	replicate_api_token	(?:(?:\b(r8_[0-9A-Za-z-_]{37})\b)|(?:\br8_[0-9A-Za-z_-]{37}\b))
 Resend	Resend API Key	resend_api_key	\b(re_[1-9A-HJ-NP-Za-km-z]{8}_[1-9A-HJ-NP-Za-km-z]{24})\b
 Rootly	Rootly API Key	rootly_api_key	\b(rootly_[a-f0-9]{64})\b
@@ -507,7 +562,9 @@ Salesforce	Salesforce Refresh Token	salesforce_refresh_token	(?:(?:(?i)\b(5AEP86
 Samsara	Samsara API Token	samsara_api_token	(?i)\b(?:SAMSARA_API_TOKEN|SAMSARA_OAUTH_ACCESS_TOKEN|SAMSARA|SAMSARA_API_KEY|SAMSARA_API_TOKEN|SAMSARA_ACCESS_TOKEN|SAMSARA_SECRET|SAMSARA_CLIENT_SECRET|SAMSARA_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Samsara	Samsara OAuth Access Token	samsara_oauth_access_token	(?i)\b(?:SAMSARA_API_TOKEN|SAMSARA_OAUTH_ACCESS_TOKEN|SAMSARA|SAMSARA_API_KEY|SAMSARA_API_TOKEN|SAMSARA_ACCESS_TOKEN|SAMSARA_SECRET|SAMSARA_CLIENT_SECRET|SAMSARA_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Sauce Labs	Sauce Labs Access Key environment variable	sauce_access_key_env	SAUCE_ACCESS_KEY=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Scalingo	Scalingo API Token	scalingo_api_token	\btk-us-[\w-]{48}\b
 Scalr	Scalr API Token	scalr_api_token	(?i)\b(?:SCALR_API_TOKEN|SCALR|SCALR_API_KEY|SCALR_API_TOKEN|SCALR_ACCESS_TOKEN|SCALR_SECRET|SCALR_CLIENT_SECRET|SCALR_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+security	Security password	security_password	(?i)\bsecurity\b[^\n]{0,200}?\badd-(?:generic|internet)-password\b[^\n]{0,200}?\s-w\s+['"]?[^\s'"$]+
 Segment	Segment Public API Token	segment_public_api_token	(?i)\b(?:SEGMENT_PUBLIC_API_TOKEN|SEGMENT|SEGMENT_API_KEY|SEGMENT_API_TOKEN|SEGMENT_ACCESS_TOKEN|SEGMENT_SECRET|SEGMENT_CLIENT_SECRET|SEGMENT_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 SendGrid	SendGrid API Key	sendgrid_api_key	(?:(?:\b(SG\.(?i)[a-z0-9=_\-\.]{66})(?:[\x60'"\s;]|\\[nr]|$))|(?:\bSG\.[\w\-]{20,24}\.[\w\-]{39,50}\b))
 Sentry	Sentry Auth Token environment variable	sentry_auth_token_env	SENTRY_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
@@ -515,6 +572,7 @@ Sentry	Sentry Integration Token	sentry_integration_token	(?:(?:(?i)[\w.-]{0,50}?
 Sentry	Sentry Organization Token	sentry_organization_token	(?:(?:\bsntrys_eyJpYXQiO[a-zA-Z0-9+/]{10,200}(?:LCJyZWdpb25fdXJs|InJlZ2lvbl91cmwi|cmVnaW9uX3VybCI6)[a-zA-Z0-9+/]{10,200}={0,2}_[a-zA-Z0-9+/]{43}(?:[^a-zA-Z0-9+/]|\z))|(?:\b(sntrys_eyJ[a-zA-Z0-9=_+/]{197})\b))
 Sentry	Sentry Personal Token	sentry_personal_token	(?:(?:\b(sntryu_[a-f0-9]{64})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(sntryu_[a-f0-9]{64})\b))
 Sentry	Sentry User App Auth Token	sentry_user_app_auth_token	(?:(?:\b(sntryu_[a-f0-9]{64})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(sntryu_[a-f0-9]{64})\b))
+Settlemint	Settlemint Personal Access Token	settlemint_personal_access_token	\bsm_pat_[A-Za-z0-9]{16}\b
 Shippo	Shippo Live API Token	shippo_live_api_token	(?:(?:\b(shippo_(?:live|test)_[a-fA-F0-9]{40})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(shippo_(live|test)_[a-f0-9]{40})\b))
 Shippo	Shippo Test API Token	shippo_test_api_token	(?:(?:\b(shippo_(?:live|test)_[a-fA-F0-9]{40})(?:[\x60'"\s;]|\\[nr]|$))|(?:\b(shippo_(live|test)_[a-f0-9]{40})\b))
 Shopee	Shopee Open Platform Partner Key	shopee_open_platform_partner_key	(?i)\b(?:SHOPEE_OPEN_PLATFORM_PARTNER_KEY|SHOPEE|SHOPEE_API_KEY|SHOPEE_API_TOKEN|SHOPEE_ACCESS_TOKEN|SHOPEE_SECRET|SHOPEE_CLIENT_SECRET|SHOPEE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
@@ -535,20 +593,27 @@ Slack	Slack Incoming Webhook URL	slack_incoming_webhook_url	(?:(?:(?:https?://)?
 Slack	Slack Token environment variable	slack_token_env	SLACK_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Slack	Slack Workflow Trigger URL	slack_workflow_trigger_url	(?:https?://)?hooks.slack.com/(?:services|workflows|triggers)/[A-Za-z0-9+/]{43,56}
 Slack	Slack Workflow Webhook URL	slack_workflow_webhook_url	(?:https?://)?hooks.slack.com/(?:services|workflows|triggers)/[A-Za-z0-9+/]{43,56}
+SMB	Smbclient password	smbclient_password	\bsmbclient\b[^\n]{0,160}?\s-U\s*\S+%\S+
 Snowflake	SFPG Connection String	snowflake_postgres_connection_string	(?i)\bpostgres(?:ql)?://[^:\s/]+:[^@\s/]+@[^/\s]+
 Snowflake	SFPG Host	snowflake_postgres_host, snowflake_postgres_password	(?:(?:(?i)\b(?:SNOWFLAKE_POSTGRES_HOST|SNOWFLAKE_POSTGRES_PASSWORD|SNOWFLAKE|SNOWFLAKE_API_KEY|SNOWFLAKE_API_TOKEN|SNOWFLAKE_ACCESS_TOKEN|SNOWFLAKE_SECRET|SNOWFLAKE_CLIENT_SECRET|SNOWFLAKE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:(?i)\b(?:SNOWFLAKE_POSTGRES_PASSWORD|SNOWFLAKE|SNOWFLAKE_API_KEY|SNOWFLAKE_API_TOKEN|SNOWFLAKE_ACCESS_TOKEN|SNOWFLAKE_SECRET|SNOWFLAKE_CLIENT_SECRET|SNOWFLAKE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Snowflake	Snowflake Programmatic Access Token	snowflake_programmatic_access_token	(?i)\b(?:SNOWFLAKE_PROGRAMMATIC_ACCESS_TOKEN|SNOWFLAKE|SNOWFLAKE_API_KEY|SNOWFLAKE_API_TOKEN|SNOWFLAKE_ACCESS_TOKEN|SNOWFLAKE_SECRET|SNOWFLAKE_CLIENT_SECRET|SNOWFLAKE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Snyk	Snyk API Token	snyk_api_token	(?i)[\w.-]{0,50}?(?:snyk[_.-]?(?:(?:api|oauth)[_.-]?)?(?:key|token))(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[\x60'"\s;]|\\[nr]|$)
+SonarQube	SonarQube Token	sonarqube_token	(?i)\b(?:squ_|sqp_|sqa_)[a-z0-9_=-]{40}\b
 Sourcegraph	Sourcegraph Access Token	sourcegraph_access_token	(?:(?:\bsgp_(?:[a-fA-F0-9]{16}|local)_[a-fA-F0-9]{40}\b)|(?:\bsgp_[a-fA-F0-9]{40}\b))
 Sourcegraph	Sourcegraph Access Token with Instance Identifier	sourcegraph_instance_identifier_access_token	(?:(?:\bsgp_(?:[a-fA-F0-9]{16}|local)_[a-fA-F0-9]{40}\b)|(?:\bsgp_[a-fA-F0-9]{40}\b))
 Sourcegraph	Sourcegraph Dotcom User Gateway Access Token	sourcegraph_dotcom_user_gateway	(?:(?:\b(slk_[a-f0-9]{64})\b)|(?:(?i)\b(?:SOURCEGRAPH_DOTCOM_USER_GATEWAY|SOURCEGRAPH|SOURCEGRAPH_API_KEY|SOURCEGRAPH_API_TOKEN|SOURCEGRAPH_ACCESS_TOKEN|SOURCEGRAPH_SECRET|SOURCEGRAPH_CLIENT_SECRET|SOURCEGRAPH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Sourcegraph	Sourcegraph License Key Token	sourcegraph_license_key_token	(?:(?:\bsgp_(?:[a-fA-F0-9]{16}|local)_[a-fA-F0-9]{40}\b)|(?:\bsgp_[a-fA-F0-9]{40}\b)|(?:(?i)\b(?:SOURCEGRAPH_LICENSE_KEY_TOKEN|SOURCEGRAPH|SOURCEGRAPH_API_KEY|SOURCEGRAPH_API_TOKEN|SOURCEGRAPH_ACCESS_TOKEN|SOURCEGRAPH_SECRET|SOURCEGRAPH_CLIENT_SECRET|SOURCEGRAPH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Sourcegraph	Sourcegraph Product Subscription Token	sourcegraph_product_subscription_token	(?:(?:\bsgp_(?:[a-fA-F0-9]{16}|local)_[a-fA-F0-9]{40}\b)|(?:\bsgp_[a-fA-F0-9]{40}\b)|(?:(?i)\b(?:SOURCEGRAPH_PRODUCT_SUBSCRIPTION_TOKEN|SOURCEGRAPH|SOURCEGRAPH_API_KEY|SOURCEGRAPH_API_TOKEN|SOURCEGRAPH_ACCESS_TOKEN|SOURCEGRAPH_SECRET|SOURCEGRAPH_CLIENT_SECRET|SOURCEGRAPH_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 SpaceX	Starlink Public API V2 Client Secret	starlink_public_api_v2_secret	(?i)\b(?:STARLINK_PUBLIC_API_V2_SECRET|STARLINK|STARLINK_API_KEY|STARLINK_API_TOKEN|STARLINK_ACCESS_TOKEN|STARLINK_SECRET|STARLINK_CLIENT_SECRET|STARLINK_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+SQL	SQLCMD password	sqlcmd_password	(?i:\bsqlcmd\b)[^\n]{0,160}?\s-P\s*['"]?[^\s'"$]+
 Square	Square Access Token	square_access_token	(?:(?:\b((?:EAAA|sq0atp-)[\w-]{22,60})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?:sandbox-)?sq0i[a-z]{2}-[0-9A-Za-z_-]{22,43}))
 Square	Square Access Token environment variable	square_access_token_env	square_access_token=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Square	Square OAuth Secret environment variable	square_oauth_secret_env	square_oauth_secret=["']?([0-9a-zA-Z*/+]{1,100})["']?
 Square	Square Production Application Secret	square_production_application_secret	(?:(?:\b((?:EAAA|sq0atp-)[\w-]{22,60})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?:sandbox-)?sq0i[a-z]{2}-[0-9A-Za-z_-]{22,43})|(?:(?:sandbox-)?sq0c[a-z]{2}-[0-9A-Za-z_-]{40,50})|(?:(?i)\b(?:SQUARE_PRODUCTION_APPLICATION_SECRET|SQUARE|SQUARE_API_KEY|SQUARE_API_TOKEN|SQUARE_ACCESS_TOKEN|SQUARE_SECRET|SQUARE_CLIENT_SECRET|SQUARE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Square	Square Sandbox Application Secret	square_sandbox_application_secret	(?:(?:\b((?:EAAA|sq0atp-)[\w-]{22,60})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?:sandbox-)?sq0i[a-z]{2}-[0-9A-Za-z_-]{22,43})|(?:(?:sandbox-)?sq0c[a-z]{2}-[0-9A-Za-z_-]{40,50})|(?:(?i)\b(?:SQUARE_SANDBOX_APPLICATION_SECRET|SQUARE|SQUARE_API_KEY|SQUARE_API_TOKEN|SQUARE_ACCESS_TOKEN|SQUARE_SECRET|SQUARE_CLIENT_SECRET|SQUARE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
+SSH	SSH key passphrase	ssh_keygen_passphrase	\bssh-keygen\b[^\n]{0,120}?\s-N\s*['"]?[^\s'"$]+
+SSH	Sshpass password	sshpass_password	\bsshpass\b[^\n]{0,80}?\s-p\s*['"]?[^\s'"$-][^\s'"]*
+SSH	SSHPASS password environment variable	sshpass_env	(?i)\bSSHPASS\b\s*[:=]\s*(?:"[^"$]{1,}"|'[^'$]{1,}'|[^\s"'$\x60]{1,})
 SSLMate	SSLMate API Key	sslmate_api_key	(?i)\b(?:SSLMATE_API_KEY|SSLMATE_CLUSTER_SECRET|SSLMATE|SSLMATE_API_KEY|SSLMATE_API_TOKEN|SSLMATE_ACCESS_TOKEN|SSLMATE_SECRET|SSLMATE_CLIENT_SECRET|SSLMATE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 SSLMate	SSLMate Cluster Secret	sslmate_cluster_secret	(?i)\b(?:SSLMATE_API_KEY|SSLMATE_CLUSTER_SECRET|SSLMATE|SSLMATE_API_KEY|SSLMATE_API_TOKEN|SSLMATE_ACCESS_TOKEN|SSLMATE_SECRET|SSLMATE_CLIENT_SECRET|SSLMATE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Stripe	Stripe API Key	stripe_api_key	(?:(?:\b((?:sk|rk)_(?:test|live|prod)_[a-zA-Z0-9]{10,99})(?:[\x60'"\s;]|\\[nr]|$))|(?:[rs]k_live_[a-zA-Z0-9]{20,247}))
@@ -558,6 +623,7 @@ Stripe	Stripe Live API Restricted Key	stripe_live_restricted_key	(?:(?:\b((?:sk|
 Stripe	Stripe Test API Restricted Key	stripe_test_restricted_key	(?:(?:\b((?:sk|rk)_(?:test|live|prod)_[a-zA-Z0-9]{10,99})(?:[\x60'"\s;]|\\[nr]|$))|(?:[rs]k_live_[a-zA-Z0-9]{20,247}))
 Stripe	Stripe Test API Secret Key	stripe_test_secret_key	(?:(?:\b((?:sk|rk)_(?:test|live|prod)_[a-zA-Z0-9]{10,99})(?:[\x60'"\s;]|\\[nr]|$))|(?:[rs]k_live_[a-zA-Z0-9]{20,247}))
 Stripe	Stripe Webhook Signing Secret	stripe_webhook_signing_secret	\bwhsec_[A-Za-z0-9]{16,}\b
+SumoLogic	SumoLogic Access ID	sumologic_access_id	(?i)[\w.-]{0,50}?(?:sumo)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(su[a-zA-Z0-9]{12})(?:[\x60'"\s;]|\\[nr]|$)
 Supabase	Supabase OAuth Access Token	supabase_oauth_access_token	(?:(?:\b(sbp_[a-z0-9]{40})\b)|(?:(?i)\b(?:SUPABASE_OAUTH_ACCESS_TOKEN|SUPABASE|SUPABASE_API_KEY|SUPABASE_API_TOKEN|SUPABASE_ACCESS_TOKEN|SUPABASE_SECRET|SUPABASE_CLIENT_SECRET|SUPABASE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Supabase	Supabase Personal Access Token	supabase_personal_access_token	(?:(?:\b(sbp_[a-z0-9]{40})\b)|(?:\bsbp_[a-z0-9]{40}\b))
 Supabase	Supabase Personal Access Token (scoped)	supabase_scoped_personal_access_token	(?:(?:\b(sbp_[a-z0-9]{40})\b)|(?:\bsbp_[a-z0-9]{40}\b))
@@ -575,10 +641,12 @@ Tencent	Tencent Cloud Secret ID	tencent_cloud_secret_id	(?:(?:(?i)\b(?:TENCENT_C
 Tencent	Tencent WeChat API App ID	tencent_wechat_api_app_id	(?:(?:(?i)\b(?:TENCENT_CLOUD_SECRET_ID|TENCENT_CLOUD_SECRET_KEY|TENCENTCLOUD_SECRETID|TENCENTCLOUD_SECRETKEY|TENCENT|TENCENT_API_KEY|TENCENT_API_TOKEN|TENCENT_ACCESS_TOKEN|TENCENT_SECRET|TENCENT_CLIENT_SECRET|TENCENT_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bAKID[A-Za-z0-9]{20,}\b))
 Tencent	Tencent WeChat Pay Token	tencent_wechat_pay_token	(?:(?:(?i)\b(?:TENCENT_CLOUD_SECRET_ID|TENCENT_CLOUD_SECRET_KEY|TENCENTCLOUD_SECRETID|TENCENTCLOUD_SECRETKEY|TENCENT|TENCENT_API_KEY|TENCENT_API_TOKEN|TENCENT_ACCESS_TOKEN|TENCENT_SECRET|TENCENT_CLIENT_SECRET|TENCENT_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bAKID[A-Za-z0-9]{20,}\b))
 Thunderstore	Thunderstore IO API Token	thunderstore_io_api_token	(?i)\b(?:THUNDERSTORE_IO_API_TOKEN|THUNDERSTORE|THUNDERSTORE_API_KEY|THUNDERSTORE_API_TOKEN|THUNDERSTORE_ACCESS_TOKEN|THUNDERSTORE_SECRET|THUNDERSTORE_CLIENT_SECRET|THUNDERSTORE_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Travis CI	Travis CI Access Token	travisci_access_token	(?i)[\w.-]{0,50}?(?:travis)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{22})(?:[\x60'"\s;]|\\[nr]|$)
 Twilio	Twilio Access Token	twilio_access_token	(?:(?:\bAC[0-9a-f]{32}\b)|(?:(?i)\b(?:TWILIO_ACCESS_TOKEN|TWILIO|TWILIO_API_KEY|TWILIO_API_TOKEN|TWILIO_ACCESS_TOKEN|TWILIO_SECRET|TWILIO_CLIENT_SECRET|TWILIO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Twilio	Twilio Account String Identifier	twilio_account_sid	(?:(?:\bAC[0-9a-f]{32}\b)|(?:\bAC[0-9a-f]{32}\b))
 Twilio	Twilio API Key	twilio_api_key	(?:(?:SK[0-9a-fA-F]{32})|(?:\bSK[a-zA-Z0-9]{32}\b))
 Twilio	Twilio Auth Token environment variable	twilio_auth_token_env	TWILIO_AUTH_TOKEN=["']?([0-9a-zA-Z*/+]{1,100})["']?
+Twitch	Twitch API Token	twitch_api_token	(?i)[\w.-]{0,50}?(?:twitch)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{30})(?:[\x60'"\s;]|\\[nr]|$)
 Twitter	Twitter access token	twitter_access_token	(?i)twitter(.{0,20})?[''"]([0-9a-z]{35,44})[''"]
 Twitter	Twitter API key	twitter_api_key	(?i)twitter(.{0,20})?[''"]([0-9a-z]{18,25})[''"]
 Typeform	Typeform Personal Access Token	typeform_personal_access_token	(?:(?:\btfp_[a-zA-Z0-9_]{40,59}\b)|(?:(?i)[\w.-]{0,50}?(?:typeform)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(tfp_[a-z0-9\-_\.=]{59})(?:[\x60'"\s;]|\\[nr]|$)))
@@ -609,6 +677,7 @@ Wave Mobile Money Inc.	Wave Test API Key	wave_api_test_key	(?i)\b(?:WAVE_API_PRO
 Weatherstack	Weatherstack API Key	weatherstack_api_key	(?i)\b(?:WEATHERSTACK_API_KEY|WEATHERSTACK|WEATHERSTACK_API_KEY|WEATHERSTACK_API_TOKEN|WEATHERSTACK_ACCESS_TOKEN|WEATHERSTACK_SECRET|WEATHERSTACK_CLIENT_SECRET|WEATHERSTACK_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Weights & Biases	Weights & Biases API Key	wandb_api_key	\b(wandb_v1_[A-Za-z0-9]{27}_[A-Za-z0-9]{49})\b
 wget	wget credentials	wget_credentials	wget(?:.*)--(?:ftp-|http-)?(?:password|user)[ =]([^ ]*)
+wget	wget form password	wget_form_password	(?i)\bwget\b[^\n]{0,240}?(?:--post-data|--body-data)\s+['"]?[^\s'"]*(?:password|passwd|pwd|token|secret|api[_-]?key)=[^\s'"&$]+
 Workato	Workato Developer API Token	workato_developer_api_token	(?i)\b(?:WORKATO_DEVELOPER_API_TOKEN|WORKATO|WORKATO_API_KEY|WORKATO_API_TOKEN|WORKATO_ACCESS_TOKEN|WORKATO_SECRET|WORKATO_CLIENT_SECRET|WORKATO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 WorkOS	WorkOS Production API Key	workos_production_api_key	(?:(?:(?i)\b(?:WORKOS_PRODUCTION_API_KEY|WORKOS_STAGING_API_KEY|WORKOS|WORKOS_API_KEY|WORKOS_API_TOKEN|WORKOS_ACCESS_TOKEN|WORKOS_SECRET|WORKOS_CLIENT_SECRET|WORKOS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bsk_[A-Za-z0-9_-]{20,}\b))
 WorkOS	WorkOS Staging API Key	workos_staging_api_key	(?:(?:(?i)\b(?:WORKOS_PRODUCTION_API_KEY|WORKOS_STAGING_API_KEY|WORKOS|WORKOS_API_KEY|WORKOS_API_TOKEN|WORKOS_ACCESS_TOKEN|WORKOS_SECRET|WORKOS_CLIENT_SECRET|WORKOS_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,}))|(?:\bsk_[A-Za-z0-9_-]{20,}\b))
@@ -623,5 +692,14 @@ Yandex	Yandex.Dictionary API Key	yandex_dictionary_api_key	(?:(?:(?i)[\w.-]{0,50
 Yandex	Yandex.Passport OAuth Token	yandex_passport_oauth_token	(?:(?:(?i)[\w.-]{0,50}?(?:yandex)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(t1\.[A-Z0-9a-z_-]+[=]{0,2}\.[A-Z0-9a-z_-]{86}[=]{0,2})(?:[\x60'"\s;]|\\[nr]|$))|(?:(?i)\b(?:YANDEX_PASSPORT_OAUTH_TOKEN|YANDEX_PASSPORT|YANDEX_PASSPORT_API_KEY|YANDEX_PASSPORT_API_TOKEN|YANDEX_PASSPORT_ACCESS_TOKEN|YANDEX_PASSPORT_SECRET|YANDEX_PASSPORT_CLIENT_SECRET|YANDEX_PASSPORT_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})))
 Yandex	Yandex.Predictor API Key	yandex_predictor_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:yandex)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(AQVN[A-Za-z0-9_\-]{35,38})(?:[\x60'"\s;]|\\[nr]|$))|(?:\bAQVN[A-Za-z0-9_\-]{35,38}\b))
 Yandex	Yandex.Translate API Key	yandex_translate_api_key	(?:(?:(?i)[\w.-]{0,50}?(?:yandex)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}(AQVN[A-Za-z0-9_\-]{35,38})(?:[\x60'"\s;]|\\[nr]|$))|(?:\bAQVN[A-Za-z0-9_\-]{35,38}\b))
+Zendesk	Zendesk Secret Key	zendesk_secret_key	(?i)[\w.-]{0,50}?(?:zendesk)(?:[ \t\w.-]{0,20})[\s'"]{0,3}(?:=|>|:{1,3}=|\|\||:|=>|\?=|,)[\x60'"\s=]{0,5}([a-z0-9]{40})(?:[\x60'"\s;]|\\[nr]|$)
 ZenHub	ZenHub Personal API Key	zenhub_personal_api_key	(?i)\b(?:ZENHUB_PERSONAL_API_KEY|ZENHUB|ZENHUB_API_KEY|ZENHUB_API_TOKEN|ZENHUB_ACCESS_TOKEN|ZENHUB_SECRET|ZENHUB_CLIENT_SECRET|ZENHUB_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
 Zuplo	Zuplo Consumer API Key	zuplo_consumer_api_key	(?i)\b(?:ZUPLO_CONSUMER_API_KEY|ZUPLO|ZUPLO_API_KEY|ZUPLO_API_TOKEN|ZUPLO_ACCESS_TOKEN|ZUPLO_SECRET|ZUPLO_CLIENT_SECRET|ZUPLO_PASSWORD)\b\s*[:=]\s*["\']?([A-Za-z0-9_\-./+=]{8,})
+Generic	Cookie credential	generic_cookie_credential	(?i)(?:\b(?:cookie|set-cookie)\s*:\s*|(?:^|\s)(?:-b|--cookie)\s+['"]?)[^\s;=]*(?:session|sess|auth|token|jwt|sid)[^\s;=]*=[^\s'";]{8,}
+Generic	Database URL with password parameter	generic_database_url_password	(?i)\b(?:mysql|postgres(?:ql)?)(?:\+[a-z0-9]+)?://[^\s?]+\?[^\s]*(?:pwd|password)=[^&\s]+
+Generic	HTTP Basic authentication header	generic_http_basic_authentication_header	(?i:authorization):(?:.*)(?i:basic).(.*)("|'|\x60|\$\()
+Generic	HTTP Bearer authentication header	generic_http_bearer_authentication_header	(?i)\b(?:authorization|proxy-authorization)\s*:\s*(?:bearer|token)\s+([A-Za-z0-9._~+/-]{8,}=*)
+Generic	HTTP credential header	generic_http_credential_header	(?i)\b(?:authorization|proxy-authorization|x-api-key|x-auth-token|api-key|apikey|private-token|x-gitlab-token|x-access-token)\s*[:=]\s*["']?(?:(?:basic|bearer|token|digest)\s+)?[A-Za-z0-9._~+/=-]{12,}
+Generic	JSON credential field	generic_json_credential_field	(?i)"(?:password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?token|refresh[_-]?token|client[_-]?secret|auth[_-]?token)"\s*:\s*"[^"$]{6,}"
+Generic	Private key	generic_private_key	(?i)(-----BEGIN[ A-Z0-9_-]{0,100}PRIVATE KEY(?: BLOCK)?-----)
+Generic	URL with credentials	generic_url_credentials	(?i)\b(?:https?|ftps?|sftp|ssh|rediss?|amqps?|smtps?|imaps?|ldaps?|wss?|git)://[^/\s:@'"]*:[^/\s@'"\x60$]{3,}@[^/\s'"]+

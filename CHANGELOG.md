@@ -10,9 +10,12 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-11
+
 ### Added
 
 - Add a comprehensive set of secret scanning patterns for provider tokens, private keys, connection strings, and webhooks
+- Add generic shell-history patterns for credential-bearing URLs, HTTP headers, CLI password flags, secret files, and account-password commands
 
 ### Changed
 
